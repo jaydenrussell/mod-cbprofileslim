@@ -1,0 +1,20 @@
+# Ignore scratch / diagnostic artifacts
+php.zip
+*.py
+check_*.py
+
+# Auxiliary builds not part of the primary deliverable
+scc_user_header_deployment.zip
+scc_user_header_inline.zip
+scc_user_header_inline.php
+scc-login-card-overrides.zip
+scc-login-card.xml
+
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.bak
+*~
+
+# Keep the installable module zip (deliverable) — explicitly tracked
+!mod_sccuserheader.zip
