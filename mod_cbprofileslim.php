@@ -1,12 +1,13 @@
 <?php
 /**
- * SCC User Header — Standalone Module (v1.4.2)
+ * CB Profile Slim Display — Standalone Module
  *
  * Outputs: Display Name [avatar] for logged-in users, nothing for guests.
- * Works standalone — no dependency on sccard/cblogin module being on page.
+ * Reads user data via Community Builder (CB) API; works standalone — no
+ * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.4.3
+ * @version 1.5.0
  */
 defined('_JEXEC') or die;
 
@@ -24,8 +25,8 @@ require_once __DIR__ . '/helper.php';
 
 $profileUrl   = isset($params) ? $params->get('profile_url', 'https://simcoecurlingclub.ca/scc-profile') : 'https://simcoecurlingclub.ca/scc-profile';
 $avatarSize   = isset($params) ? (int) $params->get('avatar_size', 32) : 32;
-$displayName  = ModSccUserHeaderHelper::getDisplayName((int) $user->id) ?: $user->get('name');
-$avatarUrl    = ModSccUserHeaderHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0));
+$displayName  = ModCbProfileSlimHelper::getDisplayName((int) $user->id) ?: $user->get('name');
+$avatarUrl    = ModCbProfileSlimHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0));
 
 $containerPadding = isset($params) ? $params->get('container_padding', '0 0 0 0') : '0 0 0 0';
 $containerMargin  = isset($params) ? $params->get('container_margin', '0') : '0';
@@ -41,7 +42,7 @@ switch ($avatarAlign) {
 
 ?>
 <style>
-#scc-user-header {
+#cbps-header {
   display: inline-flex;
   align-items: center;
   gap: .5rem;
@@ -52,16 +53,16 @@ switch ($avatarAlign) {
   padding: <?php echo htmlspecialchars($containerPadding, ENT_COMPAT, 'UTF-8'); ?>;
   margin: <?php echo htmlspecialchars($containerMargin, ENT_COMPAT, 'UTF-8'); ?>;
 }
-#scc-user-header .scc-header-link {
+#cbps-header .cbps-header-link {
   display: inline-flex;
   align-items: center;
   gap: .5rem;
 }
-#scc-user-header .scc-name {
+#cbps-header .cbps-name {
   line-height: 1.2;
   white-space: nowrap;
 }
-#scc-user-header .scc-avatar-wrap {
+#cbps-header .cbps-avatar-wrap {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -75,7 +76,7 @@ switch ($avatarAlign) {
   z-index: 10;
   transform: <?php echo $alignTransform; ?>;
 }
-#scc-user-header .scc-avatar {
+#cbps-header .cbps-avatar {
   width: <?php echo $avatarSize; ?>px;
   height: <?php echo $avatarSize; ?>px;
   border-radius: 50%;
@@ -85,14 +86,14 @@ switch ($avatarAlign) {
 }
 .astroid-header,
 .astroid-header * { z-index: 1; }
-#scc-user-header { position: relative; z-index: 10; }
+#cbps-header { position: relative; z-index: 10; }
 </style>
-<div id="scc-user-header">
-  <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="scc-header-link">
-    <span class="scc-name"><?php echo htmlspecialchars($displayName); ?></span>
-    <span class="scc-avatar-wrap">
+<div id="cbps-header">
+  <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="cbps-header-link">
+    <span class="cbps-name"><?php echo htmlspecialchars($displayName); ?></span>
+    <span class="cbps-avatar-wrap">
       <?php if ($avatarUrl): ?>
-      <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="<?php echo htmlspecialchars($displayName); ?>" class="scc-avatar" />
+      <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="<?php echo htmlspecialchars($displayName); ?>" class="cbps-avatar" />
       <?php endif; ?>
     </span>
   </a>

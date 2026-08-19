@@ -1,44 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <updates>
 	<update>
-		<name>SCC User Header</name>
-		<description>Displays user avatar and display name in the top header navbar.</description>
-		<element>mod_sccuserheader</element>
+		<name>CB Profile Slim Display</name>
+		<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar.</description>
+		<element>mod_cbprofileslim</element>
 		<type>module</type>
 		<client>site</client>
-		<version>1.4.3</version>
+		<version>1.5.0</version>
 		<author>jaydenrussell</author>
-		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
-		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.3/mod_sccuserheader.zip</downloadurl>
-		<sha256>49a2eba41126bb6a12d17d8a37b3a3cfd665650999ce2a8f8a636103d3cd0d78</sha256>
-		<targetplatform name="joomla" version="3.[0-9]+" />
-		<php_minimum>7.4.0</php_minimum>
-	</update>
-	<update>
-		<name>SCC User Header</name>
-		<description>Displays user avatar and display name in the top header navbar.</description>
-		<element>mod_sccuserheader</element>
-		<type>module</type>
-		<client>site</client>
-		<version>1.4.2</version>
-		<author>jaydenrussell</author>
-		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
-		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.2/mod_sccuserheader.zip</downloadurl>
-		<sha256>c8fe2de3bd935c5d0d450440f5fb6e04b47ee6dfcce1e4d0b81350c6f5785bd2</sha256>
-		<targetplatform name="joomla" version="3.[0-9]+" />
-		<php_minimum>7.4.0</php_minimum>
-	</update>
-	<update>
-		<name>SCC User Header</name>
-		<description>Displays user avatar and display name in the top header navbar.</description>
-		<element>mod_sccuserheader</element>
-		<type>module</type>
-		<client>site</client>
-		<version>1.4.1</version>
-		<author>jaydenrussell</author>
-		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
-		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.1/mod_sccuserheader.zip</downloadurl>
-		<sha256>98c88c37739afb436b746a958fbff88f2f2a8ede19265b5b14bd3a52680a1c4b</sha256>
+		<infourl>https://github.com/jaydenrussell/mod-cbprofileslim</infourl>
+		<downloadurl>https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/v1.5.0/mod_cbprofileslim.zip</downloadurl>
+		<sha256>93f57aed3933d8f1ffa457d80d263a5f6307f5449ceeec6038cdfc67b1cfc112</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
