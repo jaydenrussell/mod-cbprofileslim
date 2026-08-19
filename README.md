@@ -59,6 +59,9 @@ mod_sccuserheader/
 | 1.2.9 | CB field API primary + DB fallback |
 | 1.3.0 | DB fallback uses `user_id`; keeps raw extension; profile_url param |
 | 1.3.1 | Security cleanup: removed debug block, avatar path allowlist |
+| 1.4.0 | Avatar DB fallback made opt-in (CB API only by default); `avatar_db_fallback` param |
+| 1.4.1 | Robust CB API avatar extraction: initCbApi first, csv→html→property methods; cbimport cb.database |
+| 1.4.2 | Audit cleanup: docblock version fix, htmlspecialchars on CSS params |
 
 ## License
 
