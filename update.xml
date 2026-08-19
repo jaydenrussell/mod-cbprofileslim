@@ -10,7 +10,7 @@
 		<author>jaydenrussell</author>
 		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.3/mod_sccuserheader.zip</downloadurl>
-		<sha256>43faeb69aaafcbb92dfa1366f6fbf69e536d03bfdb6ac082f507431844fc3053</sha256>
+		<sha256>49a2eba41126bb6a12d17d8a37b3a3cfd665650999ce2a8f8a636103d3cd0d78</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
