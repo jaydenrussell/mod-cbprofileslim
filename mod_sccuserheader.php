@@ -6,7 +6,7 @@
  * Works standalone — no dependency on sccard/cblogin module being on page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.3.1
+ * @version 1.4.0
  */
 defined('_JEXEC') or die;
 
@@ -25,7 +25,7 @@ require_once __DIR__ . '/helper.php';
 $profileUrl   = isset($params) ? $params->get('profile_url', 'https://simcoecurlingclub.ca/scc-profile') : 'https://simcoecurlingclub.ca/scc-profile';
 $avatarSize   = isset($params) ? (int) $params->get('avatar_size', 32) : 32;
 $displayName  = ModSccUserHeaderHelper::getDisplayName((int) $user->id) ?: $user->get('name');
-$avatarUrl    = ModSccUserHeaderHelper::getAvatar((int) $user->id, $avatarSize);
+$avatarUrl    = ModSccUserHeaderHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0));
 
 $containerPadding = isset($params) ? $params->get('container_padding', '0 0 0 0') : '0 0 0 0';
 $containerMargin  = isset($params) ? $params->get('container_margin', '0') : '0';

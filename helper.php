@@ -33,7 +33,7 @@ class ModSccUserHeaderHelper
         return $name;
     }
 
-    public static function getAvatar($userId, $size = 32)
+    public static function getAvatar($userId, $size = 32, $allowDbFallback = false)
     {
         $url = '';
 
@@ -51,12 +51,14 @@ class ModSccUserHeaderHelper
                     }
                 }
             } catch (\Throwable $e) {
-                // fall through to DB fallback
+                // fall through to DB fallback (if enabled)
             }
         }
 
-        // FALLBACK: Direct DB query using user_id foreign key
-        if (!$url) {
+        // OPTIONAL FALLBACK: Direct DB query using user_id foreign key.
+        // Disabled by default. When off, the avatar is blank if the CB API
+        // does not return a URL — so the avatar's presence proves CB API worked.
+        if (!$url && $allowDbFallback) {
             try {
                 $db = Factory::getDbo();
                 $db->setQuery(

@@ -5,7 +5,7 @@
 	<creationDate>2026-08-18</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.3.1</version>
+	<version>1.4.0</version>
 	<description>Displays user avatar and display name in the top header navbar.</description>
 	<files>
 		<filename module="mod_sccuserheader">mod_sccuserheader.php</filename>
@@ -66,7 +66,18 @@
 					default="0"
 					size="20"
 				/>
-			</fieldset>
+				<field
+					name="avatar_db_fallback"
+					type="radio"
+					label="Avatar DB Fallback"
+					description="OFF (default): avatar uses Community Builder API only. If CB returns no image, the avatar is blank — proving CB API is in use. ON: falls back to a direct #__comprofiler database query when CB API returns nothing."
+					default="0"
+					class="btn-group btn-group-yesno"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+				</fieldset>
 		</fields>
 	</config>
 </extension>
