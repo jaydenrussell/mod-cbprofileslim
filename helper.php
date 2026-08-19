@@ -2,7 +2,7 @@
 /**
  * @package     mod_sccuserheader
  * @subpackage  SCC User Header
- * @version     1.3.0
+ * @version     1.4.1
  */
 defined('_JEXEC') or die;
 
@@ -15,9 +15,11 @@ class ModSccUserHeaderHelper
     {
         $name = '';
 
+        // 1. MUST initialize CB API first so CBuser class gets loaded
+        self::initCbApi();
+
         if (class_exists('CBuser')) {
             try {
-                self::initCbApi();
                 $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
                     $cbName = $cbUser->getField('typename', null, 'raw');
@@ -37,17 +39,39 @@ class ModSccUserHeaderHelper
     {
         $url = '';
 
-        // PRIMARY: CB Field API
+        // 1. MUST initialize CB API first so CBuser class gets loaded
+        self::initCbApi();
+
         if (class_exists('CBuser')) {
             try {
-                self::initCbApi();
                 $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
-                    $html = $cbUser->getField('avatar', null, 'html', 'none', 'profile', 0, false);
-                    if ($html && preg_match('#src="([^"]+)"#i', $html, $m)) {
-                        $url = $m[1];
-                    } elseif ($html && preg_match("#src='([^']+)'#i", $html, $m)) {
-                        $url = $m[1];
+                    $rawPath = '';
+
+                    // Method A: Get formatted field string directly (returns relative path)
+                    $rawPath = $cbUser->getField('avatar', null, 'csv');
+
+                    // Method B: Fallback to HTML string parsing if CSV returned empty
+                    if (empty($rawPath)) {
+                        $html = $cbUser->getField('avatar', null, 'html', 'none', 'profile', 0, false);
+                        if ($html && preg_match('#src="([^"]+)"#i', $html, $m)) {
+                            $rawPath = $m[1];
+                        } elseif ($html && preg_match("#src='([^']+)'#i", $html, $m)) {
+                            $rawPath = $m[1];
+                        }
+                    }
+
+                    // Method C: Fallback to direct CB user property access
+                    if (empty($rawPath) && !empty($cbUser->avatar)) {
+                        $rawPath = $cbUser->avatar;
+                    }
+
+                    if (!empty($rawPath)) {
+                        if (strpos($rawPath, 'http') === 0 || strpos($rawPath, '/') === 0) {
+                            $url = $rawPath;
+                        } else {
+                            $url = '/images/comprofiler/' . ltrim($rawPath, '/');
+                        }
                     }
                 }
             } catch (\Throwable $e) {
@@ -55,9 +79,7 @@ class ModSccUserHeaderHelper
             }
         }
 
-        // OPTIONAL FALLBACK: Direct DB query using user_id foreign key.
-        // Disabled by default. When off, the avatar is blank if the CB API
-        // does not return a URL — so the avatar's presence proves CB API worked.
+        // OPTIONAL FALLBACK: Direct DB query using user_id foreign key
         if (!$url && $allowDbFallback) {
             try {
                 $db = Factory::getDbo();
@@ -69,8 +91,6 @@ class ModSccUserHeaderHelper
                 );
                 $dbAvatar = $db->loadResult();
                 if ($dbAvatar && $dbAvatar !== '0' && $dbAvatar !== '') {
-                    // Allowlist: only permit safe filename characters to prevent
-                    // path traversal or injection from the stored avatar value.
                     if (preg_match('/^[a-zA-Z0-9_\.\-\/]+$/', $dbAvatar)) {
                         if (strpos($dbAvatar, '/') !== false) {
                             $url = '/' . ltrim($dbAvatar, '/');
@@ -110,6 +130,7 @@ class ModSccUserHeaderHelper
         }
         if (function_exists('cbimport')) {
             cbimport('cb.html');
+            cbimport('cb.database');
         }
         try {
             if (isset($GLOBALS['_PLUGINS']) && method_exists($GLOBALS['_PLUGINS'], 'loadPluginGroup')) {
