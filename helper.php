@@ -1,15 +1,15 @@
 <?php
 /**
- * @package     mod_sccuserheader
- * @subpackage  SCC User Header
- * @version     1.4.1
+ * @package     mod_cbprofileslim
+ * @subpackage  CB Profile Slim Display
+ * @version     1.5.0
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
 
-class ModSccUserHeaderHelper
+class ModCbProfileSlimHelper
 {
     public static function getDisplayName($userId)
     {
