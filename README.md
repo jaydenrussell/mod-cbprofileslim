@@ -1,47 +1,34 @@
-# mod_sccuserheader — SCC User Header (Joomla 3 Module)
+# CB Profile Slim Display (`mod_cbprofileslim`)
 
-Displays the logged-in user's **display name + avatar** in the site's top header
-navbar. Works as a standalone module — it does **not** depend on any other module
-(e.g. the CB Login / `sccard` module) being published on the page.
+Standalone **Joomla 3 module** that displays the **logged-in Community Builder user's
+display name + avatar** in the site's top header navbar. It reads user data via the
+**Community Builder API** (CB is required — that is where the name and avatar come from).
 
-## Features
+## Why this exists
 
-- Shows display name (Community Builder `typename` → Joomla name fallback)
-- Shows avatar image (CB field API, with a DB fallback to `#__comprofiler`)
-- Fully standalone — no dependency on `sccard` / CB Login module
-- Guarded with top-level `try/catch` so it can never throw a 500
-- Joomla 3.x compatible (`extension type="module" version="3.0"`)
+Community Builder's own login module can show the avatar, but only when that module is
+on the page. This module is **standalone**: it initialises the CB API itself and works on
+every page (calendar, articles, anywhere) without depending on another CB module being present.
 
-## Installation
+## Install
 
-1. In Joomla Administration: **Extensions → Install**, upload `mod_sccuserheader.zip`.
-2. Publish the module to your header position (e.g. `topbar-2` on Astroid `tpl_jdseattle`).
-3. Set **Profile URL**, **Avatar Size**, **Avatar Alignment**, padding/margin in the
-   module's options.
-4. Clear Joomla cache after installing/updating.
+1. **Extensions → Install**, upload `mod_cbprofileslim.zip`.
+2. Set the module position to your header navbar (e.g. `topbar-2` on the Astroid `tpl_jdseattle` template).
+3. Clear Joomla cache.
 
-> **Note:** The avatar uses a direct DB query fallback to `#__comprofiler` keyed on
-> `user_id`. Community Builder's `getField('avatar')` only renders reliably when CB's
-> fieldtype renderer is loaded (i.e. on a CB page or when a CB module is present). The
-> DB fallback guarantees the image loads on every page.
+## How the avatar works
 
-## Repository layout
+- **Community Builder API first.** `initCbApi()` loads CB, then the avatar is resolved via
+  `CBuser::getInstance()->getField('avatar', ...)` using three methods (csv → html-parse → property).
+- **DB fallback is opt-in.** A module parameter `avatar_db_fallback` (default **No**) controls
+  whether a direct `#__comprofiler` query is used when the CB API returns nothing. With it **off**,
+  a blank avatar proves the CB API returned nothing on that page.
+- The display name uses the CB `typename` field, falling back to the Joomla user name.
 
-```
-mod_sccuserheader/
-├── mod_sccuserheader.php      # Module entry point (renders name + avatar)
-├── mod_sccuserheader.xml      # Joomla install manifest
-├── helper.php                 # ModSccUserHeaderHelper (name + avatar logic)
-├── index.html                 # Directory placeholder
-├── language/en-GB/            # Language strings
-├── mod_sccuserheader.zip      # Installable package (built from the above)
-├── html/mod_cblogin/          # sccard override — the proven avatar reference
-│   ├── sccard.php
-│   └── sccard_logout.php
-├── INSTALL_GUIDE.md
-├── POSITIONING_GUIDE.md
-└── FIX_AVATAR_URL.md
-```
+## Updates
+
+The module registers a Joomla update server (`update.xml` on GitHub). After installing once,
+**Extensions → Update** will offer newer versions, verified by SHA256 checksum.
 
 ## Version history
 
@@ -53,16 +40,20 @@ mod_sccuserheader/
 | 1.2.3 | Removed `cbimport('cb.plugin.user')` (missing file fatal) |
 | 1.2.4 | `loadPluginGroup('user')` wrapped in try/catch |
 | 1.2.5 | Joomla name fallback for display name |
-| 1.2.6 | Avatar uses `profile` view (master image, no missing-thumbnail 404) |
+| 1.2.6 | Avatar uses `profile` view (master image) |
 | 1.2.7 | Removed SVG/onerror fallbacks |
-| 1.2.8 | Avatar DB query fallback (`#__comprofiler`, same as sccard) |
+| 1.2.8 | Avatar DB query fallback (`#__comprofiler`) |
 | 1.2.9 | CB field API primary + DB fallback |
 | 1.3.0 | DB fallback uses `user_id`; keeps raw extension; profile_url param |
 | 1.3.1 | Security cleanup: removed debug block, avatar path allowlist |
-| 1.4.0 | Avatar DB fallback made opt-in (CB API only by default); `avatar_db_fallback` param |
-| 1.4.1 | Robust CB API avatar extraction: initCbApi first, csv→html→property methods; cbimport cb.database |
-| 1.4.2 | Audit cleanup: docblock version fix, htmlspecialchars on CSS params |
-| 1.4.3 | Add update.xml + updateservers (Joomla self-update); author=jaydenrussell; ships update.xml |
+| 1.4.0 | Avatar DB fallback made opt-in (CB API only by default) |
+| 1.4.1 | Robust CB API avatar extraction: initCbApi first, csv→html→property |
+| 1.4.2 | Audit cleanup: docblock fix, htmlspecialchars on CSS params |
+| 1.4.3 | Add update.xml + updateservers (Joomla self-update); author=jaydenrussell |
+| 1.5.0 | **Renamed** SCC User Header → CB Profile Slim Display (`mod_cbprofileslim`); CSS `scc-` → `cbps-` |
+
+> Note: v1.5.0 is a **clean break** — the element name changed, so it will not auto-update
+> from the old `mod_sccuserheader`. Uninstall the old module and install v1.5.0 fresh.
 
 ## License
 
