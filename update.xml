@@ -10,7 +10,7 @@
 		<author>jaydenrussell</author>
 		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.3/mod_sccuserheader.zip</downloadurl>
-		<sha256>2e3ab4d706587b614aac9eb7768479bb7dda861c3781cd5c5494734564039450</sha256>
+		<sha256>43faeb69aaafcbb92dfa1366f6fbf69e536d03bfdb6ac082f507431844fc3053</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
@@ -24,7 +24,7 @@
 		<author>jaydenrussell</author>
 		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.2/mod_sccuserheader.zip</downloadurl>
-		<sha256>33ca145ffc81acd40ba16b4b90837182773b07190a263ea449c335771684ae9e</sha256>
+		<sha256>c8fe2de3bd935c5d0d450440f5fb6e04b47ee6dfcce1e4d0b81350c6f5785bd2</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
@@ -38,7 +38,7 @@
 		<author>jaydenrussell</author>
 		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.1/mod_sccuserheader.zip</downloadurl>
-		<sha256>a2d090150de9cb24d1232504fcb913c79000f2bbc96affcbe7196ef503480231</sha256>
+		<sha256>98c88c37739afb436b746a958fbff88f2f2a8ede19265b5b14bd3a52680a1c4b</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
