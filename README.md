@@ -62,6 +62,7 @@ mod_sccuserheader/
 | 1.4.0 | Avatar DB fallback made opt-in (CB API only by default); `avatar_db_fallback` param |
 | 1.4.1 | Robust CB API avatar extraction: initCbApi first, csv→html→property methods; cbimport cb.database |
 | 1.4.2 | Audit cleanup: docblock version fix, htmlspecialchars on CSS params |
+| 1.4.3 | Add update.xml + updateservers (Joomla self-update); author=jaydenrussell; ships update.xml |
 
 ## License
 
