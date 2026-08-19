@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<updates>
+	<update>
+		<name>SCC User Header</name>
+		<description>Displays user avatar and display name in the top header navbar.</description>
+		<element>mod_sccuserheader</element>
+		<type>module</type>
+		<client>site</client>
+		<version>1.4.3</version>
+		<author>jaydenrussell</author>
+		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
+		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.3/mod_sccuserheader.zip</downloadurl>
+		<sha256>2e3ab4d706587b614aac9eb7768479bb7dda861c3781cd5c5494734564039450</sha256>
+		<targetplatform name="joomla" version="3.[0-9]+" />
+		<php_minimum>7.4.0</php_minimum>
+	</update>
+	<update>
+		<name>SCC User Header</name>
+		<description>Displays user avatar and display name in the top header navbar.</description>
+		<element>mod_sccuserheader</element>
+		<type>module</type>
+		<client>site</client>
+		<version>1.4.2</version>
+		<author>jaydenrussell</author>
+		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
+		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.2/mod_sccuserheader.zip</downloadurl>
+		<sha256>28de93a4ca17779b329058495eb50a0784b336de1bf61edb5ed757fbbbb91a33</sha256>
+		<targetplatform name="joomla" version="3.[0-9]+" />
+		<php_minimum>7.4.0</php_minimum>
+	</update>
+	<update>
+		<name>SCC User Header</name>
+		<description>Displays user avatar and display name in the top header navbar.</description>
+		<element>mod_sccuserheader</element>
+		<type>module</type>
+		<client>site</client>
+		<version>1.4.2</version>
+		<author>jaydenrussell</author>
+		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
+		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.2/mod_sccuserheader.zip</downloadurl>
+		<sha256>28de93a4ca17779b329058495eb50a0784b336de1bf61edb5ed757fbbbb91a33</sha256>
+		<targetplatform name="joomla" version="3.[0-9]+" />
+		<php_minimum>7.4.0</php_minimum>
+	</update>
+	<update>
+		<name>SCC User Header</name>
+		<description>Displays user avatar and display name in the top header navbar.</description>
+		<element>mod_sccuserheader</element>
+		<type>module</type>
+		<client>site</client>
+		<version>1.4.1</version>
+		<author>jaydenrussell</author>
+		<infourl>https://github.com/jaydenrussell/mod-sccuserheader</infourl>
+		<downloadurl>https://github.com/jaydenrussell/mod-sccuserheader/releases/download/v1.4.1/mod_sccuserheader.zip</downloadurl>
+		<sha256>a2d090150de9cb24d1232504fcb913c79000f2bbc96affcbe7196ef503480231</sha256>
+		<targetplatform name="joomla" version="3.[0-9]+" />
+		<php_minimum>7.4.0</php_minimum>
+	</update>
+</updates>

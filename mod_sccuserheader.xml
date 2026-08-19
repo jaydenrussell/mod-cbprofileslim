@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" version="3.0" client="site" method="upgrade">
 	<name>SCC User Header</name>
-	<author>CallerFlash</author>
+	<author>jaydenrussell</author>
 	<creationDate>2026-08-18</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.4.2</version>
+	<version>1.4.3</version>
 	<description>Displays user avatar and display name in the top header navbar.</description>
+	<updateservers>
+		<server type="extension" name="SCC User Header Update" priority="1">https://raw.githubusercontent.com/jaydenrussell/mod-sccuserheader/master/update.xml</server>
+	</updateservers>
 	<files>
 		<filename module="mod_sccuserheader">mod_sccuserheader.php</filename>
 		<filename>helper.php</filename>
