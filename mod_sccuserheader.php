@@ -1,12 +1,12 @@
 <?php
 /**
- * SCC User Header — Standalone Module (v1.3.1)
+ * SCC User Header — Standalone Module (v1.4.2)
  *
  * Outputs: Display Name [avatar] for logged-in users, nothing for guests.
  * Works standalone — no dependency on sccard/cblogin module being on page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.4.1
+ * @version 1.4.2
  */
 defined('_JEXEC') or die;
 
@@ -49,8 +49,8 @@ switch ($avatarAlign) {
   color: inherit;
   font-size: inherit;
   font-weight: inherit;
-  padding: <?php echo $containerPadding; ?>;
-  margin: <?php echo $containerMargin; ?>;
+  padding: <?php echo htmlspecialchars($containerPadding, ENT_COMPAT, 'UTF-8'); ?>;
+  margin: <?php echo htmlspecialchars($containerMargin, ENT_COMPAT, 'UTF-8'); ?>;
 }
 #scc-user-header .scc-header-link {
   display: inline-flex;
