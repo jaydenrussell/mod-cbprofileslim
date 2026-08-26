@@ -2,20 +2,22 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.0
+ * @version     1.5.1
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Uri\Uri;
+use Joomla\CMS\Log\Log;
 
 class ModCbProfileSlimHelper
 {
+    private const CB_LOADED_FLAG = 'MOD_CBPROFILESLIM_CB_LOADED';
+    private const IMAGE_DIR = '/images/comprofiler/';
+
     public static function getDisplayName($userId)
     {
         $name = '';
-
-        // 1. MUST initialize CB API first so CBuser class gets loaded
         self::initCbApi();
 
         if (class_exists('CBuser')) {
@@ -23,12 +25,12 @@ class ModCbProfileSlimHelper
                 $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
                     $cbName = $cbUser->getField('typename', null, 'raw');
-                    if ($cbName) {
+                    if (is_string($cbName) && $cbName !== '') {
                         $name = $cbName;
                     }
                 }
             } catch (\Throwable $e) {
-                // fall through to Joomla name
+                self::log('getDisplayName failed: ' . $e->getMessage());
             }
         }
 
@@ -37,50 +39,38 @@ class ModCbProfileSlimHelper
 
     public static function getAvatar($userId, $size = 32, $allowDbFallback = false)
     {
-        $url = '';
+        $raw = '';
 
-        // 1. MUST initialize CB API first so CBuser class gets loaded
         self::initCbApi();
-
         if (class_exists('CBuser')) {
             try {
                 $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
-                    $rawPath = '';
-
-                    // Method A: Get formatted field string directly (returns relative path)
-                    $rawPath = $cbUser->getField('avatar', null, 'csv');
-
-                    // Method B: Fallback to HTML string parsing if CSV returned empty
-                    if (empty($rawPath)) {
+                    // Method A: raw relative path
+                    $raw = $cbUser->getField('avatar', null, 'csv');
+                    // Method B: parse src from rendered HTML
+                    if (empty($raw)) {
                         $html = $cbUser->getField('avatar', null, 'html', 'none', 'profile', 0, false);
-                        if ($html && preg_match('#src="([^"]+)"#i', $html, $m)) {
-                            $rawPath = $m[1];
-                        } elseif ($html && preg_match("#src='([^']+)'#i", $html, $m)) {
-                            $rawPath = $m[1];
+                        if (is_string($html)) {
+                            if (preg_match('#src="([^"]+)"#i', $html, $m)) {
+                                $raw = $m[1];
+                            } elseif (preg_match("#src='([^']+)'#i", $html, $m)) {
+                                $raw = $m[1];
+                            }
                         }
                     }
-
-                    // Method C: Fallback to direct CB user property access
-                    if (empty($rawPath) && !empty($cbUser->avatar)) {
-                        $rawPath = $cbUser->avatar;
-                    }
-
-                    if (!empty($rawPath)) {
-                        if (strpos($rawPath, 'http') === 0 || strpos($rawPath, '/') === 0) {
-                            $url = $rawPath;
-                        } else {
-                            $url = '/images/comprofiler/' . ltrim($rawPath, '/');
-                        }
+                    // Method C: direct property
+                    if (empty($raw) && !empty($cbUser->avatar)) {
+                        $raw = $cbUser->avatar;
                     }
                 }
             } catch (\Throwable $e) {
-                // fall through to DB fallback (if enabled)
+                self::log('getAvatar CB path failed: ' . $e->getMessage());
             }
         }
 
-        // OPTIONAL FALLBACK: Direct DB query using user_id foreign key
-        if (!$url && $allowDbFallback) {
+        // DB fallback (opt-in)
+        if ($raw === '' && $allowDbFallback) {
             try {
                 $db = Factory::getDbo();
                 $db->setQuery(
@@ -90,37 +80,56 @@ class ModCbProfileSlimHelper
                         ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
                 );
                 $dbAvatar = $db->loadResult();
-                if ($dbAvatar && $dbAvatar !== '0' && $dbAvatar !== '') {
-                    if (preg_match('/^[a-zA-Z0-9_\.\-\/]+$/', $dbAvatar)) {
-                        if (strpos($dbAvatar, '/') !== false) {
-                            $url = '/' . ltrim($dbAvatar, '/');
-                        } else {
-                            $url = '/images/comprofiler/' . $dbAvatar;
-                        }
-                    }
+                if (is_string($dbAvatar) && $dbAvatar !== '' && $dbAvatar !== '0') {
+                    $raw = $dbAvatar;
                 }
             } catch (\Throwable $e) {
-                // no fallback image
+                self::log('getAvatar DB fallback failed: ' . $e->getMessage());
             }
         }
 
-        // Normalise URL
-        if ($url && strpos($url, Uri::root()) === 0) {
-            $url = '/' . ltrim(str_replace(Uri::root(), '', $url), '/');
-        } elseif ($url && strpos($url, 'http') === 0) {
-            $currentHost = Uri::getInstance()->getHost();
-            $avatarHost  = parse_url($url, PHP_URL_HOST);
-            if ($avatarHost === $currentHost || 'www.' . $currentHost === $avatarHost) {
-                $url = '/' . ltrim(parse_url($url, PHP_URL_PATH), '/');
-            }
+        return self::sanitizeAvatarUrl($raw);
+    }
+
+    /**
+     * Strict: only accept a root-relative path that resolves inside the
+     * comprofiler images directory. Anything else (absolute URL, protocol-
+     * relative, foreign host, non-path) is rejected -> empty string.
+     */
+    private static function sanitizeAvatarUrl($raw)
+    {
+        if (!is_string($raw) || $raw === '') {
+            return '';
         }
 
-        return $url;
+        // Reject anything that is or could become an external/abs URL.
+        if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $raw)) {      // scheme: (http:, javascript:, etc.)
+            self::log('Avatar rejected: scheme present: ' . $raw);
+            return '';
+        }
+        if (strpos($raw, '//') === 0) {                          // protocol-relative
+            self::log('Avatar rejected: protocol-relative: ' . $raw);
+            return '';
+        }
+        if (strpos($raw, '\\') !== false) {                      // Windows/abs path
+            return '';
+        }
+
+        // Strip any leading slash(es); we re-prefix to the known image dir.
+        $clean = ltrim($raw, '/');
+
+        // Allow only safe filename characters (no slashes, no dots-in-path traversal).
+        if (!preg_match('#^[a-zA-Z0-9_.-]+$#', $clean)) {
+            self::log('Avatar rejected: invalid chars: ' . $raw);
+            return '';
+        }
+
+        return self::IMAGE_DIR . $clean;
     }
 
     protected static function initCbApi()
     {
-        if (defined('SCC_CB_API_LOADED')) {
+        if (defined(self::CB_LOADED_FLAG)) {
             return;
         }
 
@@ -137,9 +146,18 @@ class ModCbProfileSlimHelper
                 $GLOBALS['_PLUGINS']->loadPluginGroup('user');
             }
         } catch (\Throwable $e) {
-            // Ignore if loadPluginGroup fails
+            self::log('loadPluginGroup failed: ' . $e->getMessage());
         }
 
-        define('SCC_CB_API_LOADED', 1);
+        define(self::CB_LOADED_FLAG, 1);
+    }
+
+    private static function log($msg)
+    {
+        try {
+            Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
+        } catch (\Throwable $e) {
+            // logging must never throw
+        }
     }
 }
