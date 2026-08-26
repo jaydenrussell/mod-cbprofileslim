@@ -5,10 +5,10 @@
 	<creationDate>2026-08-19</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.5.0</version>
+	<version>1.5.1</version>
 	<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar. Reads user data via the Community Builder API.</description>
 	<updateservers>
-		<server type="extension" name="CB Profile Slim Display Update" priority="1">https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml</server>
+		<server type="extension" name="CB Profile Slim Display Update" priority="1">https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/update-info/update.xml</server>
 	</updateservers>
 	<files>
 		<filename module="mod_cbprofileslim">mod_cbprofileslim.php</filename>
