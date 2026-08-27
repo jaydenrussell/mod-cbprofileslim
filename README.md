@@ -24,6 +24,21 @@ every page (calendar, articles, anywhere) without depending on another CB module
   whether a direct `#__comprofiler` query is used when the CB API returns nothing. With it **off**,
   a blank avatar proves the CB API returned nothing on that page.
 - The display name uses the CB `typename` field, falling back to the Joomla user name.
+- **Avatar storage requirement (hard constraint).** `sanitizeAvatarUrl()` only accepts a
+  **flat filename** (e.g. `383_abc.jpg`) stored under `/images/comprofiler/`. Absolute URLs,
+  subdirectories, `..`, protocol-relative (`//`), or any non-filename characters are **rejected**
+  and the avatar renders blank. If your CB stores avatars as absolute URLs or in subfolders,
+  **fix the stored data first** — do not relax the validator. This is intentional hardening.
+
+## Security model & update trust
+
+- The Joomla update channel fetches `update.xml` from the immutable `update-info` release
+  (not `master`), and verifies the downloaded zip against the SHA256 in that file.
+- **This provides transport integrity only, not authenticity.** If the GitHub account is
+  compromised, the `update-info` asset *and* its SHA256 can be swapped together, and every
+  install would pull attacker code. Mitigations in place: branch protection + mandatory CODEOWNERS
+  review + a required-approval `release` environment (see `.github/`). For untrusted distribution,
+  additionally host `update.xml` + zips on infrastructure you control with restricted write access.
 
 ## Updates
 

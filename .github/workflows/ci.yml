@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: phpunit
+
+      - name: PHP lint (syntax check) — fails build on any parse error
+        run: |
+          for f in mod_cbprofileslim.php helper.php; do
+            php -l "$f"
+          done
+
+      - name: Run sanitizer unit tests
+        run: phpunit --bootstrap tests/bootstrap.php tests/SanitizerTest.php
