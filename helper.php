@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.4
+ * @version     1.5.5
  */
 defined('_JEXEC') or die;
 
@@ -114,19 +114,28 @@ class ModCbProfileSlimHelper
             return '';
         }
 
-        // Strip any leading slash(es); we re-prefix to the known image dir.
-        $clean = ltrim($raw, '/');
+        // Strip leading slash(es) so the value is always relative to $basePath.
+        $rel = ltrim($raw, '/');
 
-        // Allow only safe filename characters (no slashes, no dots-in-path traversal).
-        if (!preg_match('#^[a-zA-Z0-9_.-]+$#', $clean)) {
-            self::log('Avatar rejected: invalid chars: ' . $raw);
+        // Allow only relative path segments: [seg]/[seg], safe chars per segment,
+        // no ".." traversal, no empty segments. Rejects anything else (incl. flat
+        // filenames, which match too).
+        if ($rel === '' || !preg_match('#^(?:[a-zA-Z0-9_.-]+/)*[a-zA-Z0-9_.-]+$#', $rel)) {
+            self::log('Avatar rejected: invalid path: ' . $raw);
+            return '';
+        }
+        if (strpos($rel, '..') !== false) {
+            self::log('Avatar rejected: traversal: ' . $raw);
             return '';
         }
 
-        // $basePath is validated by validateBasePath() before reaching here; enforce
-        // a trailing slash defensively.
-        $prefix = rtrim($basePath, '/') . '/';
-        return $prefix . $clean;
+        $base = rtrim($basePath, '/') . '/';
+        // If CB already returned the full base-relative path (e.g. the configured
+        // image dir prefix), use it as-is instead of double-prefixing.
+        if (strpos($rel, ltrim($base, '/')) === 0) {
+            return $base . substr($rel, strlen(ltrim($base, '/')));
+        }
+        return $base . $rel;
     }
 
     /**
