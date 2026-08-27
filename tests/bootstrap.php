@@ -15,3 +15,13 @@ namespace Joomla\CMS\Log {
         public static function add($msg, $level = null, $category = null) { /* no-op in tests */ }
     }
 }
+
+namespace Joomla\CMS\Uri {
+    class Uri
+    {
+        public static function root()
+        {
+            return 'https://simcoecurlingclub.ca/';
+        }
+    }
+}

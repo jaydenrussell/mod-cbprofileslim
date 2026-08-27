@@ -5,6 +5,17 @@ use PHPUnit\Framework\TestCase;
 
 class SanitizerTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        // Provide a site host so sanitizeAvatarUrl()'s same-site absolute-URL
+        // branch has a reference host in the test environment.
+        $_SERVER['HTTP_HOST'] = 'simcoecurlingclub.ca';
+    }
+
+    protected function tearDown(): void
+    {
+        unset($_SERVER['HTTP_HOST']);
+    }
     // ---- Avatar sanitizer (Critical fix regression) ----
     public function avatarProvider()
     {
@@ -19,6 +30,9 @@ class SanitizerTest extends TestCase
             'space in name'            => ['a b.jpg', ''],
             'backslash'                => ['c:\\x', ''],
             'empty'                    => ['', ''],
+            'same-site absolute'       => ['https://simcoecurlingclub.ca/images/comprofiler/383_abc.jpg', '/images/comprofiler/383_abc.jpg'],
+            'same-site absolute sub'   => ['https://simcoecurlingclub.ca/images/comprofiler/gallery/x.png', '/images/comprofiler/gallery/x.png'],
+            'foreign absolute'         => ['https://evil.com/images/comprofiler/x.jpg', ''],
         ];
     }
 
@@ -68,5 +82,41 @@ class SanitizerTest extends TestCase
     public function testValidateCss($input, $expected)
     {
         $this->assertSame($expected, ModCbProfileSlimHelper::validateCss($input));
+    }
+
+    // ---- Base path validator (H1 regression: reject traversal / empty segments) ----
+    public function basePathProvider()
+    {
+        return [
+            'default'          => ['/images/comprofiler/', '/images/comprofiler/'],
+            'subdir'           => ['/images/comprofiler/gallery/', '/images/comprofiler/gallery/'],
+            'traversal'        => ['/images/../secret/', '/images/comprofiler/'],
+            'traversal mid'    => ['/images/comprofiler/../x/', '/images/comprofiler/'],
+            'double slash'     => ['/images//comprofiler/', '/images/comprofiler/'],
+            'scheme'           => ['https://evil.com/x/', '/images/comprofiler/'],
+            'empty'            => ['', '/images/comprofiler/'],
+        ];
+    }
+
+    /** @dataProvider basePathProvider */
+    public function testValidateBasePath($input, $expected)
+    {
+        $this->assertSame($expected, ModCbProfileSlimHelper::validateBasePath($input));
+    }
+
+    // ---- Avatar absolute same-site URL (needs a known site host in env) ----
+    public function testSanitizeSameSiteAbsoluteUrl()
+    {
+        $_SERVER['HTTP_HOST'] = 'simcoecurlingclub.ca';
+        $this->assertSame(
+            '/images/comprofiler/383_abc.jpg',
+            ModCbProfileSlimHelper::sanitizeAvatarUrl('https://simcoecurlingclub.ca/images/comprofiler/383_abc.jpg')
+        );
+        // foreign host must be rejected
+        $this->assertSame(
+            '',
+            ModCbProfileSlimHelper::sanitizeAvatarUrl('https://evil.com/images/comprofiler/x.jpg')
+        );
+        unset($_SERVER['HTTP_HOST']);
     }
 }

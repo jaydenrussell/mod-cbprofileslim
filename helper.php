@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.7
+ * @version     1.5.8
  */
 defined('_JEXEC') or die;
 
@@ -12,7 +12,6 @@ use Joomla\CMS\Log\Log;
 class ModCbProfileSlimHelper
 {
     private const CB_LOADED_FLAG = 'MOD_CBPROFILESLIM_CB_LOADED';
-    private const IMAGE_DIR = '/images/comprofiler/';
 
     public static function getDisplayName($userId)
     {
@@ -187,6 +186,10 @@ class ModCbProfileSlimHelper
         if (!preg_match('#^/[a-zA-Z0-9_./-]+$#', $raw)) {
             return '/images/comprofiler/';
         }
+        // Reject path traversal (..) and empty segments (//) in the base path.
+        if (strpos($raw, '..') !== false || strpos($raw, '//') !== false) {
+            return '/images/comprofiler/';
+        }
         return rtrim($raw, '/') . '/';
     }
 
@@ -275,7 +278,12 @@ class ModCbProfileSlimHelper
             self::log('loadPluginGroup failed: ' . $e->getMessage());
         }
 
-        define(self::CB_LOADED_FLAG, 1);
+        // Only mark initialized if CB actually became available. Otherwise a
+        // transient failure would be cached for the whole request: every later
+        // call would skip re-init and silently return empty.
+        if (class_exists('CBuser')) {
+            define(self::CB_LOADED_FLAG, 1);
+        }
     }
 
     private static function log($msg)
