@@ -98,7 +98,7 @@ switch ($avatarAlign) {
 </style>
 <div id="cbps-header">
   <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="cbps-header-link">
-    <span class="cbps-name"><?php echo htmlspecialchars($displayName); ?></span>
+    <?php if ($displayName): ?><span class="cbps-name"><?php echo htmlspecialchars($displayName); ?></span><?php endif; ?>
     <span class="cbps-avatar-wrap">
       <?php if ($avatarUrl): ?>
       <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="<?php echo htmlspecialchars($displayName); ?>" class="cbps-avatar" />
