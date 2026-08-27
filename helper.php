@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.6
+ * @version     1.5.7
  */
 defined('_JEXEC') or die;
 
@@ -91,9 +91,11 @@ class ModCbProfileSlimHelper
     }
 
     /**
-     * Strict: only accept a root-relative path that resolves inside the
-     * comprofiler images directory. Anything else (absolute URL, protocol-
-     * relative, foreign host, non-path) is rejected -> empty string.
+     * Accepts a CB avatar value that is either a relative path (flat filename OR a
+     * subfolder like 383_abc/xyz.jpg) OR an absolute URL on the SITE'S OWN host
+     * (e.g. https://mysite.com/images/comprofiler/x.jpg) — the foreign host is
+     * stripped, leaving a same-origin relative path. Rejects foreign/abs URLs,
+     * javascript:/data: schemes, protocol-relative (//), backslashes, and "..".
      */
     private static function sanitizeAvatarUrl($raw, $basePath = '/images/comprofiler/')
     {
@@ -101,8 +103,20 @@ class ModCbProfileSlimHelper
             return '';
         }
 
-        // Reject anything that is or could become an external/abs URL.
-        if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $raw)) {      // scheme: (http:, javascript:, etc.)
+        // Same-site absolute URL? (http:// or https://)
+        if (preg_match('#^https?://#i', $raw)) {
+            $host = parse_url($raw, PHP_URL_HOST);
+            $siteHost = self::siteHost();
+            if ($host === null || $siteHost === '' || strcasecmp($host, $siteHost) !== 0) {
+                self::log('Avatar rejected: foreign/abs host: ' . $raw);
+                return '';
+            }
+            $path = parse_url($raw, PHP_URL_PATH);
+            if (!is_string($path) || $path === '') {
+                return '';
+            }
+            $raw = $path;
+        } elseif (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {   // other scheme (javascript:, data:)
             self::log('Avatar rejected: scheme present: ' . $raw);
             return '';
         }
@@ -136,6 +150,22 @@ class ModCbProfileSlimHelper
             return $base . substr($rel, strlen(ltrim($base, '/')));
         }
         return $base . $rel;
+    }
+
+    /**
+     * Returns the site's own HTTP host (no port, lowercased) for same-origin checks.
+     */
+    private static function siteHost()
+    {
+        if (class_exists('\\Joomla\\CMS\\Uri\\Uri')) {
+            $h = \Joomla\CMS\Uri\Uri::root();
+            $host = parse_url($h, PHP_URL_HOST);
+            return is_string($host) ? strtolower($host) : '';
+        }
+        if (!empty($_SERVER['HTTP_HOST'])) {
+            return strtolower(preg_replace('/:[0-9]+$/', '', $_SERVER['HTTP_HOST']));
+        }
+        return '';
     }
 
     /**
