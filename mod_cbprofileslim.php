@@ -7,7 +7,7 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.5.3
+ * @version 1.5.4
  */
 defined('_JEXEC') or die;
 
@@ -22,13 +22,18 @@ if ($user->guest) {
 
 require_once __DIR__ . '/helper.php';
 
-$profileUrl   = isset($params) ? ModCbProfileSlimHelper::validateUrl($params->get('profile_url', 'https://simcoecurlingclub.ca/scc-profile')) : 'https://simcoecurlingclub.ca/scc-profile';
+$profileUrl   = isset($params) ? ModCbProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
 if ($profileUrl === '') {
-    $profileUrl = 'https://simcoecurlingclub.ca/scc-profile';
+    // No explicit URL: link to the user's own Community Builder profile.
+    $profileUrl = ModCbProfileSlimHelper::cbProfileUrl((int) $user->id);
+}
+$avatarBasePath = isset($params) ? ModCbProfileSlimHelper::validateBasePath($params->get('avatar_base_path', '/images/comprofiler/')) : '/images/comprofiler/';
+if ($avatarBasePath === '') {
+    $avatarBasePath = '/images/comprofiler/';
 }
 $avatarSize   = isset($params) ? (int) $params->get('avatar_size', 32) : 32;
 $displayName  = ModCbProfileSlimHelper::getDisplayName((int) $user->id) ?: $user->get('name');
-$avatarUrl    = ModCbProfileSlimHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0));
+$avatarUrl    = ModCbProfileSlimHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0), $avatarBasePath);
 
 $containerPadding = isset($params) ? ModCbProfileSlimHelper::validateCss($params->get('container_padding', '0 0 0 0')) : '0 0 0 0';
 if ($containerPadding === '') {
