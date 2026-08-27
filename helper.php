@@ -2,12 +2,11 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.1
+ * @version     1.5.2
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
 use Joomla\CMS\Log\Log;
 
 class ModCbProfileSlimHelper
@@ -125,6 +124,45 @@ class ModCbProfileSlimHelper
         }
 
         return self::IMAGE_DIR . $clean;
+    }
+
+    /**
+     * Strict URL validator for the profile link. Only http(s) schemes allowed;
+     * rejects javascript:, data:, protocol-relative (//), and anything non-URL.
+     * Returns the validated URL or an empty string (never an unsafe value).
+     */
+    public static function validateUrl($raw)
+    {
+        if (!is_string($raw) || $raw === '') {
+            return '';
+        }
+        if (!preg_match('#^https?://#i', $raw)) {
+            self::log('Profile URL rejected (not http(s)): ' . $raw);
+            return '';
+        }
+        // Reject embedded control chars / whitespace that enable scheme confusion.
+        if (preg_match('#[\x00-\x20<>"]#', $raw)) {
+            self::log('Profile URL rejected (unsafe chars): ' . $raw);
+            return '';
+        }
+        return $raw;
+    }
+
+    /**
+     * Strict CSS-value validator for padding/margin params. Allows only
+     * tokens safe inside a CSS declaration (numbers, units, %, spacing).
+     * Rejects ; { } url( and any other punctuation that enables CSS injection.
+     */
+    public static function validateCss($raw)
+    {
+        if (!is_string($raw) || $raw === '') {
+            return '';
+        }
+        if (!preg_match('#^[0-9a-z%. ()+-]+$#i', $raw)) {
+            self::log('CSS value rejected (unsafe chars): ' . $raw);
+            return '';
+        }
+        return $raw;
     }
 
     protected static function initCbApi()
