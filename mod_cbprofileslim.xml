@@ -5,7 +5,7 @@
 	<creationDate>2026-08-19</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.5.1</version>
+	<version>1.5.2</version>
 	<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar. Reads user data via the Community Builder API.</description>
 	<updateservers>
 		<server type="extension" name="CB Profile Slim Display Update" priority="1">https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/update-info/update.xml</server>
@@ -29,6 +29,7 @@
 					label="Profile URL"
 					default="https://simcoecurlingclub.ca/scc-profile"
 					size="50"
+					filter="url"
 				/>
 				<field
 					name="avatar_size"
@@ -60,6 +61,7 @@
 					description="Padding for the container (e.g. 0 0 0 0)"
 					default="0 0 0 0"
 					size="20"
+					filter="string"
 				/>
 				<field
 					name="container_margin"
@@ -68,6 +70,7 @@
 					description="Margin for the container (e.g. 0)"
 					default="0"
 					size="20"
+					filter="string"
 				/>
 				<field
 					name="avatar_db_fallback"

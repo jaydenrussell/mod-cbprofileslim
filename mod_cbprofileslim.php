@@ -7,12 +7,11 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.5.1
+ * @version 1.5.2
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
 
 try {
 
@@ -23,13 +22,22 @@ if ($user->guest) {
 
 require_once __DIR__ . '/helper.php';
 
-$profileUrl   = isset($params) ? $params->get('profile_url', 'https://simcoecurlingclub.ca/scc-profile') : 'https://simcoecurlingclub.ca/scc-profile';
+$profileUrl   = isset($params) ? ModCbProfileSlimHelper::validateUrl($params->get('profile_url', 'https://simcoecurlingclub.ca/scc-profile')) : 'https://simcoecurlingclub.ca/scc-profile';
+if ($profileUrl === '') {
+    $profileUrl = 'https://simcoecurlingclub.ca/scc-profile';
+}
 $avatarSize   = isset($params) ? (int) $params->get('avatar_size', 32) : 32;
 $displayName  = ModCbProfileSlimHelper::getDisplayName((int) $user->id) ?: $user->get('name');
 $avatarUrl    = ModCbProfileSlimHelper::getAvatar((int) $user->id, $avatarSize, (bool) (isset($params) ? $params->get('avatar_db_fallback', 0) : 0));
 
-$containerPadding = isset($params) ? $params->get('container_padding', '0 0 0 0') : '0 0 0 0';
-$containerMargin  = isset($params) ? $params->get('container_margin', '0') : '0';
+$containerPadding = isset($params) ? ModCbProfileSlimHelper::validateCss($params->get('container_padding', '0 0 0 0')) : '0 0 0 0';
+if ($containerPadding === '') {
+    $containerPadding = '0 0 0 0';
+}
+$containerMargin  = isset($params) ? ModCbProfileSlimHelper::validateCss($params->get('container_margin', '0')) : '0';
+if ($containerMargin === '') {
+    $containerMargin = '0';
+}
 
 $avatarAlign = isset($params) ? $params->get('avatar_align', 'top') : 'top';
 switch ($avatarAlign) {
