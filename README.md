@@ -52,6 +52,7 @@ The module registers a Joomla update server (`update.xml` on GitHub). After inst
 | 1.4.3 | Add update.xml + updateservers (Joomla self-update); author=jaydenrussell |
 | 1.5.0 | **Renamed** SCC User Header → CB Profile Slim Display (`mod_cbprofileslim`); CSS `scc-` → `cbps-` |
 | 1.5.1 | Security hardening: strict avatar URL sanitizer (blocks external/protocol-relative loads); JLog diagnostics replace silent catches; update channel pinned to immutable release asset (`update-info`) |
+| 1.5.2 | MEDIUM fixes: validate `profile_url` (http(s)-only, XSS-safe) + CSS params; remove unused `Uri` import |
 
 > Note: v1.5.0 is a **clean break** — the element name changed, so it will not auto-update
 > from the old `mod_sccuserheader`. Uninstall the old module and install v1.5.0 fresh.
