@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.3
+ * @version     1.5.4
  */
 defined('_JEXEC') or die;
 
@@ -36,7 +36,7 @@ class ModCbProfileSlimHelper
         return $name;
     }
 
-    public static function getAvatar($userId, $size = 32, $allowDbFallback = false)
+    public static function getAvatar($userId, $size = 32, $allowDbFallback = false, $basePath = '/images/comprofiler/')
     {
         $raw = '';
 
@@ -87,7 +87,7 @@ class ModCbProfileSlimHelper
             }
         }
 
-        return self::sanitizeAvatarUrl($raw);
+        return self::sanitizeAvatarUrl($raw, $basePath);
     }
 
     /**
@@ -95,7 +95,7 @@ class ModCbProfileSlimHelper
      * comprofiler images directory. Anything else (absolute URL, protocol-
      * relative, foreign host, non-path) is rejected -> empty string.
      */
-    private static function sanitizeAvatarUrl($raw)
+    private static function sanitizeAvatarUrl($raw, $basePath = '/images/comprofiler/')
     {
         if (!is_string($raw) || $raw === '') {
             return '';
@@ -123,7 +123,56 @@ class ModCbProfileSlimHelper
             return '';
         }
 
-        return self::IMAGE_DIR . $clean;
+        // $basePath is validated by validateBasePath() before reaching here; enforce
+        // a trailing slash defensively.
+        $prefix = rtrim($basePath, '/') . '/';
+        return $prefix . $clean;
+    }
+
+    /**
+     * Validates the configured avatar base directory. Only allows a root-relative
+     * path of safe characters with a leading slash. Scheme/protocol-relative/backslash
+     * inputs are rejected and fall back to the standard CB location.
+     */
+    public static function validateBasePath($raw)
+    {
+        if (!is_string($raw) || $raw === '') {
+            return '/images/comprofiler/';
+        }
+        if (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {
+            return '/images/comprofiler/';
+        }
+        if (strpos($raw, '//') === 0 || strpos($raw, '\\\\') !== false) {
+            return '/images/comprofiler/';
+        }
+        if (!preg_match('#^/[a-zA-Z0-9_./-]+$#', $raw)) {
+            return '/images/comprofiler/';
+        }
+        return rtrim($raw, '/') . '/';
+    }
+
+    /**
+     * Builds a Community Builder profile URL for the given user via the CB API.
+     * Returns '' if CB is unavailable (caller then renders an unlinked label).
+     */
+    public static function cbProfileUrl($userId)
+    {
+        self::initCbApi();
+        if (!class_exists('CBuser')) {
+            return '';
+        }
+        try {
+            $cbUser = CBuser::getInstance((int) $userId, false);
+            if ($cbUser && method_exists($cbUser, 'userProfileURL')) {
+                $url = $cbUser->userProfileURL();
+                if (is_string($url) && $url !== '') {
+                    return self::validateUrl($url);
+                }
+            }
+        } catch (\Throwable $e) {
+            self::log('cbProfileUrl failed: ' . $e->getMessage());
+        }
+        return '';
     }
 
     /**
