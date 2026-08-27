@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../helper.php';
+
 use PHPUnit\Framework\TestCase;
 
 class SanitizerTest extends TestCase
