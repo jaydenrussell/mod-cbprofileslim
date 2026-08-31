@@ -7,7 +7,7 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.5.8
+ * @version 1.6.0
  */
 defined('_JEXEC') or die;
 
@@ -83,18 +83,18 @@ switch ($avatarAlign) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: calc(<?php echo $avatarSize; ?>px + 6px);
-  height: calc(<?php echo $avatarSize; ?>px + 6px);
+  width: calc(<?php echo (int) $avatarSize; ?>px + 6px);
+  height: calc(<?php echo (int) $avatarSize; ?>px + 6px);
   border-radius: 50%;
   border: 3px solid #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   overflow: visible;
   z-index: 10;
-  transform: <?php echo $alignTransform; ?>;
+  transform: <?php echo htmlspecialchars($alignTransform, ENT_QUOTES, 'UTF-8'); ?>;
 }
 #cbps-header .cbps-avatar {
-  width: <?php echo $avatarSize; ?>px;
-  height: <?php echo $avatarSize; ?>px;
+  width: <?php echo (int) $avatarSize; ?>px;
+  height: <?php echo (int) $avatarSize; ?>px;
   border-radius: 50%;
   object-fit: cover;
   border: 1px solid #e3ebf5;
