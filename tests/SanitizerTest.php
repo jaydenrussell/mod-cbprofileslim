@@ -7,8 +7,6 @@ class SanitizerTest extends TestCase
 {
     protected function setUp(): void
     {
-        // Provide a site host so sanitizeAvatarUrl()'s same-site absolute-URL
-        // branch has a reference host in the test environment.
         $_SERVER['HTTP_HOST'] = 'simcoecurlingclub.ca';
     }
 
@@ -74,6 +72,7 @@ class SanitizerTest extends TestCase
             'semicolon'       => ['0;color:red', ''],
             'url()'           => ['url(http://x)', ''],
             'rem unit'        => ['1.5rem', '1.5rem'],
+            'important'       => ['1.5rem !important', '1.5rem !important'],
             'empty'           => ['', ''],
         ];
     }

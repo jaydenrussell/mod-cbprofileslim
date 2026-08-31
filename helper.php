@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.5.8
+ * @version     1.6.0
  */
 defined('_JEXEC') or die;
 
@@ -13,6 +13,10 @@ class ModCbProfileSlimHelper
 {
     private const CB_LOADED_FLAG = 'MOD_CBPROFILESLIM_CB_LOADED';
 
+    /**
+     * @param int $userId
+     * @return string
+     */
     public static function getDisplayName($userId)
     {
         $name = '';
@@ -35,6 +39,13 @@ class ModCbProfileSlimHelper
         return $name;
     }
 
+    /**
+     * @param int    $userId
+     * @param int    $size
+     * @param bool   $allowDbFallback
+     * @param string $basePath
+     * @return string
+     */
     public static function getAvatar($userId, $size = 32, $allowDbFallback = false, $basePath = '/images/comprofiler/')
     {
         $raw = '';
@@ -95,6 +106,10 @@ class ModCbProfileSlimHelper
      * (e.g. https://mysite.com/images/comprofiler/x.jpg) — the foreign host is
      * stripped, leaving a same-origin relative path. Rejects foreign/abs URLs,
      * javascript:/data: schemes, protocol-relative (//), backslashes, and "..".
+     *
+     * @param string $raw
+     * @param string $basePath
+     * @return string
      */
     private static function sanitizeAvatarUrl($raw, $basePath = '/images/comprofiler/')
     {
@@ -153,6 +168,8 @@ class ModCbProfileSlimHelper
 
     /**
      * Returns the site's own HTTP host (no port, lowercased) for same-origin checks.
+     *
+     * @return string
      */
     private static function siteHost()
     {
@@ -171,6 +188,9 @@ class ModCbProfileSlimHelper
      * Validates the configured avatar base directory. Only allows a root-relative
      * path of safe characters with a leading slash. Scheme/protocol-relative/backslash
      * inputs are rejected and fall back to the standard CB location.
+     *
+     * @param string $raw
+     * @return string
      */
     public static function validateBasePath($raw)
     {
@@ -196,6 +216,9 @@ class ModCbProfileSlimHelper
     /**
      * Builds a Community Builder profile URL for the given user via the CB API.
      * Returns '' if CB is unavailable (caller then renders an unlinked label).
+     *
+     * @param int $userId
+     * @return string
      */
     public static function cbProfileUrl($userId)
     {
@@ -221,6 +244,9 @@ class ModCbProfileSlimHelper
      * Strict URL validator for the profile link. Only http(s) schemes allowed;
      * rejects javascript:, data:, protocol-relative (//), and anything non-URL.
      * Returns the validated URL or an empty string (never an unsafe value).
+     *
+     * @param string $raw
+     * @return string
      */
     public static function validateUrl($raw)
     {
@@ -241,15 +267,18 @@ class ModCbProfileSlimHelper
 
     /**
      * Strict CSS-value validator for padding/margin params. Allows only
-     * tokens safe inside a CSS declaration (numbers, units, %, spacing).
+     * tokens safe inside a CSS declaration (numbers, units, %, spacing, !important).
      * Rejects ; { } url( and any other punctuation that enables CSS injection.
+     *
+     * @param string $raw
+     * @return string
      */
     public static function validateCss($raw)
     {
         if (!is_string($raw) || $raw === '') {
             return '';
         }
-        if (!preg_match('#^[0-9a-z%. ()+-]+$#i', $raw)) {
+        if (!preg_match('#^[0-9a-z!%(). +-]+$#i', $raw)) {
             self::log('CSS value rejected (unsafe chars): ' . $raw);
             return '';
         }

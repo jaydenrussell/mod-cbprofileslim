@@ -5,7 +5,7 @@
 	<creationDate>2026-08-19</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.5.8</version>
+	<version>1.6.0</version>
 	<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar. Reads user data via the Community Builder API.</description>
 	<updateservers>
 		<server type="extension" name="Community Builder Profile Slim Display Update" priority="1">https://jaydenrussell.github.io/mod-cbprofileslim/update.xml</server>
@@ -26,17 +26,17 @@
 				<field
 					name="profile_url"
 					type="text"
-					label="Profile URL"
-					description="Optional. Leave blank to hide the link (avatar/name is not clickable). Defaults to the current user's Community Builder profile."
+					label="MOD_CBPROFILESLIM_PROFILE_URL_LABEL"
+					description="MOD_CBPROFILESLIM_PROFILE_URL_DESC"
 					default=""
 					size="50"
 					filter="url"
 				/>
-					<field
+				<field
 					name="avatar_base_path"
 					type="text"
-					label="Avatar Base Path"
-					description="Directory (relative to site root) where Community Builder stores avatar files. Default matches a standard CB install. Only change if you relocated CB's image folder."
+					label="MOD_CBPROFILESLIM_AVATAR_BASE_PATH_LABEL"
+					description="MOD_CBPROFILESLIM_AVATAR_BASE_PATH_DESC"
 					default="/images/comprofiler/"
 					size="40"
 					filter="string"
@@ -44,7 +44,8 @@
 				<field
 					name="avatar_size"
 					type="list"
-					label="Avatar Size"
+					label="MOD_CBPROFILESLIM_AVATAR_SIZE_LABEL"
+					description="MOD_CBPROFILESLIM_AVATAR_SIZE_DESC"
 					default="32"
 				>
 					<option value="16">16px</option>
@@ -56,7 +57,8 @@
 				<field
 					name="avatar_align"
 					type="list"
-					label="Avatar Vertical Alignment"
+					label="MOD_CBPROFILESLIM_AVATAR_ALIGN_LABEL"
+					description="MOD_CBPROFILESLIM_AVATAR_ALIGN_DESC"
 					default="top"
 				>
 					<option value="none">None</option>
@@ -67,8 +69,8 @@
 				<field
 					name="container_padding"
 					type="text"
-					label="Container Padding"
-					description="Padding for the container (e.g. 0 0 0 0)"
+					label="MOD_CBPROFILESLIM_CONTAINER_PADDING_LABEL"
+					description="MOD_CBPROFILESLIM_CONTAINER_PADDING_DESC"
 					default="0 0 0 0"
 					size="20"
 					filter="string"
@@ -76,8 +78,8 @@
 				<field
 					name="container_margin"
 					type="text"
-					label="Container Margin"
-					description="Margin for the container (e.g. 0)"
+					label="MOD_CBPROFILESLIM_CONTAINER_MARGIN_LABEL"
+					description="MOD_CBPROFILESLIM_CONTAINER_MARGIN_DESC"
 					default="0"
 					size="20"
 					filter="string"
@@ -85,8 +87,8 @@
 				<field
 					name="avatar_db_fallback"
 					type="radio"
-					label="Avatar DB Fallback"
-					description="OFF (default): avatar uses Community Builder API only. If CB returns no image, the avatar is blank — proving CB API is in use. ON: falls back to a direct #__comprofiler database query when CB API returns nothing."
+					label="MOD_CBPROFILESLIM_AVATAR_DB_FALLBACK_LABEL"
+					description="MOD_CBPROFILESLIM_AVATAR_DB_FALLBACK_DESC"
 					default="0"
 					class="btn-group btn-group-yesno"
 				>
