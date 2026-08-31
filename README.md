@@ -68,6 +68,13 @@ The module registers a Joomla update server (`update.xml` on GitHub). After inst
 | 1.5.0 | **Renamed** SCC User Header → CB Profile Slim Display (`mod_cbprofileslim`); CSS `scc-` → `cbps-` |
 | 1.5.1 | Security hardening: strict avatar URL sanitizer (blocks external/protocol-relative loads); JLog diagnostics replace silent catches; update channel pinned to immutable release asset (`update-info`) |
 | 1.5.2 | MEDIUM fixes: validate `profile_url` (http(s)-only, XSS-safe) + CSS params; remove unused `Uri` import |
+| 1.5.3 | Bump version; refresh `update.xml` SHA256 |
+| 1.5.4 | Portable defaults: empty `profile_url` auto-links to CB profile; `avatar_base_path` made configurable |
+| 1.5.5 | Rename to Community Builder Profile Slim Display; fix avatar path to accept CB subfolder/full paths |
+| 1.5.6 | Update server migrated to `jaydenrussell.github.io/mod-cbprofileslim/update.xml` |
+| 1.5.7 | Avatar sanitizer accepts same-site absolute URLs (fixes gallery/avatar not showing) |
+| 1.5.8 | H1 base-path traversal fix; init-failure no longer wedges subsequent calls; L3/L4 cleanup; +CI tests |
+| 1.6.0 | CSS escaping hardened; `!important` allowed in container styles; docs rewritten; CI matrix adds PHP 7.4; language keys completed; CHANGELOG and SECURITY.md added |
 
 > Note: v1.5.0 is a **clean break** — the element name changed, so it will not auto-update
 > from the old `mod_sccuserheader`. Uninstall the old module and install v1.5.0 fresh.
