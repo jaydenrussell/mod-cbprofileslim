@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.7.0
+ * @version     1.7.1
  */
 defined('_JEXEC') or die;
 
@@ -16,6 +16,7 @@ class ModCbProfileSlimHelper
     /**
      * @param int $userId
      * @return string
+     * @since 1.2.5
      */
     public static function getDisplayName($userId)
     {
@@ -45,6 +46,7 @@ class ModCbProfileSlimHelper
      * @param bool   $allowDbFallback
      * @param string $basePath
      * @return string
+     * @since 1.4.1
      */
     public static function getAvatar($userId, $size = 32, $allowDbFallback = false, $basePath = '/images/comprofiler/')
     {
@@ -110,6 +112,7 @@ class ModCbProfileSlimHelper
      * @param string $raw
      * @param string $basePath
      * @return string
+     * @since 1.5.1
      */
     private static function sanitizeAvatarUrl($raw, $basePath = '/images/comprofiler/')
     {
@@ -170,10 +173,11 @@ class ModCbProfileSlimHelper
      * Returns the site's own HTTP host (no port, lowercased) for same-origin checks.
      *
      * @return string
+     * @since 1.5.1
      */
     private static function siteHost()
     {
-        if (class_exists('\\Joomla\\CMS\\Uri\\Uri')) {
+        if (class_exists('\Joomla\CMS\Uri\Uri')) {
             $h = \Joomla\CMS\Uri\Uri::root();
             $host = parse_url($h, PHP_URL_HOST);
             return is_string($host) ? strtolower($host) : '';
@@ -191,6 +195,7 @@ class ModCbProfileSlimHelper
      *
      * @param string $raw
      * @return string
+     * @since 1.5.8
      */
     public static function validateBasePath($raw)
     {
@@ -219,6 +224,7 @@ class ModCbProfileSlimHelper
      *
      * @param int $userId
      * @return string
+     * @since 1.5.4
      */
     public static function cbProfileUrl($userId)
     {
@@ -247,6 +253,7 @@ class ModCbProfileSlimHelper
      *
      * @param string $raw
      * @return string
+     * @since 1.5.2
      */
     public static function validateUrl($raw)
     {
@@ -272,6 +279,7 @@ class ModCbProfileSlimHelper
      *
      * @param string $raw
      * @return string
+     * @since 1.5.2
      */
     public static function validateCss($raw)
     {
@@ -295,6 +303,7 @@ class ModCbProfileSlimHelper
 
     protected static function initCbApi()
     {
+        // @since 1.2.0
         if (defined(self::CB_LOADED_FLAG)) {
             return;
         }
@@ -325,6 +334,7 @@ class ModCbProfileSlimHelper
 
     private static function log($msg)
     {
+        // @since 1.2.1
         try {
             Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
         } catch (\Throwable $e) {
