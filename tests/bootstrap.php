@@ -25,3 +25,11 @@ namespace Joomla\CMS\Uri {
         }
     }
 }
+
+namespace {
+    // helper.php guards itself with `defined('_JEXEC') or die;`, exactly as in
+    // a live Joomla request. Tests must define it so the helper actually loads
+    // instead of silently terminating the process — which previously made the
+    // suite "pass" vacuously without running any assertion.
+    define('_JEXEC', 1);
+}

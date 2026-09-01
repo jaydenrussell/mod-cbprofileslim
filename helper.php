@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.6.0
+ * @version     1.7.0
  */
 defined('_JEXEC') or die;
 
@@ -280,6 +280,14 @@ class ModCbProfileSlimHelper
         }
         if (!preg_match('#^[0-9a-z!%(). +-]+$#i', $raw)) {
             self::log('CSS value rejected (unsafe chars): ' . $raw);
+            return '';
+        }
+        // Block CSS function-call tokens (expression(...), url(...), calc(...),
+        // var(...), etc.). Padding/margin values never need a function call; a
+        // '(' immediately after a letter is the signature of one. This closes
+        // the legacy expression()/javascript: CSS-injection vector.
+        if (preg_match('#[a-z]\s*\(#i', $raw)) {
+            self::log('CSS value rejected (function call): ' . $raw);
             return '';
         }
         return $raw;

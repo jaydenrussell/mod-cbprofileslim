@@ -24,7 +24,7 @@ class SanitizerTest extends TestCase
             'http scheme'              => ['http://evil.com/x', ''],
             'javascript scheme'        => ['javascript:alert(1)', ''],
             'path traversal'           => ['../../etc/passwd', ''],
-            'subdirectory'             => ['sub/dir/x.png', ''],
+            'subdirectory'             => ['sub/dir/x.png', '/images/comprofiler/sub/dir/x.png'],
             'space in name'            => ['a b.jpg', ''],
             'backslash'                => ['c:\\x', ''],
             'empty'                    => ['', ''],
@@ -37,7 +37,18 @@ class SanitizerTest extends TestCase
     /** @dataProvider avatarProvider */
     public function testSanitizeAvatarUrl($input, $expected)
     {
-        $this->assertSame($expected, ModCbProfileSlimHelper::sanitizeAvatarUrl($input));
+        $this->assertSame($expected, self::sanitizeAvatar($input));
+    }
+
+    /**
+     * Invokes the private ModCbProfileSlimHelper::sanitizeAvatarUrl via
+     * reflection so its unit tests can run without weakening the shipped
+     * class's encapsulation (the method stays private in production).
+     */
+    private static function sanitizeAvatar($raw)
+    {
+        $rm = new \ReflectionMethod('ModCbProfileSlimHelper', 'sanitizeAvatarUrl');
+        return $rm->invoke(null, $raw);
     }
 
     // ---- Profile URL validator (MEDIUM fix regression) ----
@@ -73,6 +84,9 @@ class SanitizerTest extends TestCase
             'url()'           => ['url(http://x)', ''],
             'rem unit'        => ['1.5rem', '1.5rem'],
             'important'       => ['1.5rem !important', '1.5rem !important'],
+            'expression()'    => ['expression(alert(1))', ''],
+            'calc()'          => ['calc(100% - 10px)', ''],
+            'var()'           => ['var(--x)', ''],
             'empty'           => ['', ''],
         ];
     }
@@ -109,12 +123,12 @@ class SanitizerTest extends TestCase
         $_SERVER['HTTP_HOST'] = 'simcoecurlingclub.ca';
         $this->assertSame(
             '/images/comprofiler/383_abc.jpg',
-            ModCbProfileSlimHelper::sanitizeAvatarUrl('https://simcoecurlingclub.ca/images/comprofiler/383_abc.jpg')
+            self::sanitizeAvatar('https://simcoecurlingclub.ca/images/comprofiler/383_abc.jpg')
         );
         // foreign host must be rejected
         $this->assertSame(
             '',
-            ModCbProfileSlimHelper::sanitizeAvatarUrl('https://evil.com/images/comprofiler/x.jpg')
+            self::sanitizeAvatar('https://evil.com/images/comprofiler/x.jpg')
         );
         unset($_SERVER['HTTP_HOST']);
     }

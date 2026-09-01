@@ -7,7 +7,7 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.6.0
+ * @version 1.7.0
  */
 defined('_JEXEC') or die;
 
@@ -53,7 +53,7 @@ switch ($avatarAlign) {
     case 'center': $alignTransform = 'translateY(50%)'; break;
     case 'bottom': $alignTransform = 'translateY(100%)'; break;
     case 'top':
-    default:       $alignTransform = 'translateY(50%)'; break;
+    default:       $alignTransform = 'translateY(0)'; break;
 }
 
 ?>

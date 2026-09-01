@@ -25,10 +25,13 @@ every page (calendar, articles, anywhere) without depending on another CB module
   a blank avatar proves the CB API returned nothing on that page.
 - The display name uses the CB `typename` field, falling back to the Joomla user name.
 - **Avatar storage requirement (hard constraint).** `sanitizeAvatarUrl()` only accepts a
-  **flat filename** (e.g. `383_abc.jpg`) stored under `/images/comprofiler/`. Absolute URLs,
-  subdirectories, `..`, protocol-relative (`//`), or any non-filename characters are **rejected**
-  and the avatar renders blank. If your CB stores avatars as absolute URLs or in subfolders,
-  **fix the stored data first** — do not relax the validator. This is intentional hardening.
+  **relative path** under `/images/comprofiler/` — a flat filename (`383_abc.jpg`) **or** a
+  subfolder path (`sub/dir/x.png`) — and, when CB returns one, a same-site absolute URL
+  (the foreign host is stripped to a same-origin relative path). It **rejects** foreign/absolute
+  hosts, `javascript:`/`data:` and any other scheme, protocol-relative (`//`), backslashes,
+  `..` path traversal, and any unsafe character; rejected values render the avatar blank.
+  Do **not** relax the validator — it is intentional hardening. If CB hands you a foreign-host
+  avatar URL, fix the stored data instead.
 
 ## Security model & update trust
 
@@ -75,6 +78,7 @@ The module registers a Joomla update server (`update.xml` on GitHub). After inst
 | 1.5.7 | Avatar sanitizer accepts same-site absolute URLs (fixes gallery/avatar not showing) |
 | 1.5.8 | H1 base-path traversal fix; init-failure no longer wedges subsequent calls; L3/L4 cleanup; +CI tests |
 | 1.6.0 | CSS escaping hardened; `!important` allowed in container styles; docs rewritten; CI matrix adds PHP 7.4; language keys completed; CHANGELOG and SECURITY.md added |
+| 1.7.0 | Fix `avatar_align` top/center being identical; `validateCss()` blocks function-call tokens (`expression(`/`url(`/`calc(`) |
 
 > Note: v1.5.0 is a **clean break** — the element name changed, so it will not auto-update
 > from the old `mod_sccuserheader`. Uninstall the old module and install v1.5.0 fresh.

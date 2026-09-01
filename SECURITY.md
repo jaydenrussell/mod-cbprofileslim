@@ -4,9 +4,9 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.7.x   | :white_check_mark: |
 | 1.6.x   | :white_check_mark: |
-| 1.5.x   | :x:                |
-| < 1.5.0 | :x:                |
+| < 1.6.0 | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -50,3 +50,5 @@ For higher assurance on production sites, consider:
   caches a false negative.
 - **v1.6.0**: CSS context escaping hardened; `!important` allowed in container styles;
   CI matrix covers PHP 7.4 and 8.2.
+- **v1.7.0**: `validateCss()` rejects CSS function-call tokens (`expression(`/`url(`/`calc(`);
+  `avatar_align` top/center made distinct.

@@ -4,6 +4,12 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2026-09-01
+
+### Changed
+- **Bug**: `avatar_align` `top` option now maps to `translateY(0)` (uppermost). Previously `top` and `center` both produced `translateY(50%)`, so the two options were visually identical. `top`/`center`/`bottom` are now distinct and monotonic (0% / 50% / 100%).
+- **Security**: `validateCss()` now rejects CSS function-call tokens (`expression(`/`url(`/`calc(`/`var(` — any letter followed by `(`). Closes the legacy `expression()` CSS-injection vector while preserving legitimate numeric/unit values. Added regression cases to `tests/SanitizerTest.php`.
+
 ## [1.6.0] - 2026-08-31
 
 ### Changed
