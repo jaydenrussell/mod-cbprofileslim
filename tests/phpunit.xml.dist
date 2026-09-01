@@ -4,5 +4,8 @@
         <testsuite name="Sanitizer">
             <file>tests/SanitizerTest.php</file>
         </testsuite>
+        <testsuite name="ModuleEntryPoint">
+            <file>tests/ModuleEntryPointTest.php</file>
+        </testsuite>
     </testsuites>
 </phpunit>
