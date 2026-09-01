@@ -62,6 +62,8 @@ class SanitizerTest extends TestCase
             'protocol-rel'    => ['//evil.com', ''],
             'uppercase https' => ['HTTPS://x.com', 'HTTPS://x.com'],
             'quote breakout'  => ['https://x.com"onclick=1', ''],
+            'single quote'   => ["https://x.com'onclick=1", ''],
+            'url-encoded quote' => ['https://x.com%27onclick=1', ''],
             'empty'           => ['', ''],
         ];
     }
@@ -83,7 +85,7 @@ class SanitizerTest extends TestCase
             'semicolon'       => ['0;color:red', ''],
             'url()'           => ['url(http://x)', ''],
             'rem unit'        => ['1.5rem', '1.5rem'],
-            'important'       => ['1.5rem !important', '1.5rem !important'],
+            'important'               => ['1.5rem !important', ''],
             'expression()'    => ['expression(alert(1))', ''],
             'calc()'          => ['calc(100% - 10px)', ''],
             'var()'           => ['var(--x)', ''],
@@ -108,6 +110,7 @@ class SanitizerTest extends TestCase
             'double slash'     => ['/images//comprofiler/', '/images/comprofiler/'],
             'scheme'           => ['https://evil.com/x/', '/images/comprofiler/'],
             'empty'            => ['', '/images/comprofiler/'],
+            'dot segment'      => ['/images/./comprofiler/', '/images/comprofiler/'],
         ];
     }
 

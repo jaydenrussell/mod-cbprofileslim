@@ -186,7 +186,8 @@ class ModCbProfileSlimHelper
             $host = strtolower(preg_replace('/:[0-9]+$/', '', $_SERVER['HTTP_HOST']));
             // Reject non-domain values (IP addresses, internal hosts) from
             // the Host header to prevent header-injection-based bypass.
-            if (preg_match('#^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$#', $host)) {
+            if (preg_match('#^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$#', $host)
+                && !preg_match('#^\d{1,3}(\.\d{1,3}){3}$#', $host)) {
                 return $host;
             }
         }
@@ -276,7 +277,8 @@ class ModCbProfileSlimHelper
         }
         // Reject embedded control chars / whitespace that enable scheme confusion.
         // Single quotes are rejected to prevent href breakout with ENT_COMPAT output.
-        if (preg_match('#[\x00-\x20<>"\']#', $raw)) {
+        // Backslashes are rejected to prevent Windows-style path injection.
+        if (preg_match('#[\x00-\x20<>"\'\\\\]#', $raw)) {
             self::log('Profile URL rejected (unsafe chars): ' . $raw);
             return '';
         }
@@ -284,6 +286,12 @@ class ModCbProfileSlimHelper
         $decoded = rawurldecode($raw);
         if ($decoded !== $raw && preg_match('#[\x00-\x20<>"\']#', $decoded)) {
             self::log('Profile URL rejected (URL-encoded unsafe chars): ' . $raw);
+            return '';
+        }
+        // Additional protection: reject double-encoded dangerous chars.
+        $doubleDecoded = rawurldecode($decoded);
+        if ($decoded !== $doubleDecoded && preg_match('#[\x00-\x20<>"\']#', $doubleDecoded)) {
+            self::log('Profile URL rejected (double-encoded unsafe chars): ' . $raw);
             return '';
         }
         return $raw;
@@ -330,6 +338,12 @@ class ModCbProfileSlimHelper
      */
     protected static function initCbApi()
     {
+        // Reset failed-init flag if CB foundation file now exists (e.g. newly installed).
+        if (!defined(self::CB_LOADED_FLAG) && self::$initFailed
+            && file_exists(JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php')) {
+            self::$initFailed = false;
+        }
+
         if (defined(self::CB_LOADED_FLAG) || self::$initFailed) {
             return;
         }
