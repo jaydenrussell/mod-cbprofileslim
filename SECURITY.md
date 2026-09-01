@@ -4,6 +4,7 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.8.x   | :white_check_mark: |
 | 1.7.x   | :white_check_mark: |
 | 1.6.x   | :white_check_mark: |
 | < 1.6.0 | :x:                |
@@ -52,3 +53,4 @@ For higher assurance on production sites, consider:
   CI matrix covers PHP 7.4 and 8.2.
 - **v1.7.0**: `validateCss()` rejects CSS function-call tokens (`expression(`/`url(`/`calc(`);
   `avatar_align` top/center made distinct.
+- **v1.8.2**: `validateUrl()` rejects single quotes + URL-encoded dangerous chars; `htmlspecialchars` upgraded to `ENT_QUOTES`; `validateCss()` rejects `!important`; `validateBasePath()` rejects `./` segments; `siteHost()` validates `HTTP_HOST` against domain regex; `initCbApi()` caches failed initialization; CSS preload gets `type="text/css"` + `onerror` fallback; complete `@supports` IE11 fallback; `index.html` added to `css/`; PHP minimum bumped to 8.0; targetplatform updated to Joomla 4.x.

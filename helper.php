@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.8.1
+ * @version     1.8.2
  */
 defined('_JEXEC') or die;
 
@@ -183,7 +183,12 @@ class ModCbProfileSlimHelper
             return is_string($host) ? strtolower($host) : '';
         }
         if (!empty($_SERVER['HTTP_HOST'])) {
-            return strtolower(preg_replace('/:[0-9]+$/', '', $_SERVER['HTTP_HOST']));
+            $host = strtolower(preg_replace('/:[0-9]+$/', '', $_SERVER['HTTP_HOST']));
+            // Reject non-domain values (IP addresses, internal hosts) from
+            // the Host header to prevent header-injection-based bypass.
+            if (preg_match('#^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$#', $host)) {
+                return $host;
+            }
         }
         return '';
     }
@@ -211,11 +216,16 @@ class ModCbProfileSlimHelper
         if (!preg_match('#^/[a-zA-Z0-9_./-]+$#', $raw)) {
             return '/images/comprofiler/';
         }
-        // Reject path traversal (..) and empty segments (//) in the base path.
-        if (strpos($raw, '..') !== false || strpos($raw, '//') !== false) {
+        // Reject path traversal (..), empty segments (//), and dot segments (./).
+        if (strpos($raw, '..') !== false || strpos($raw, '//') !== false || strpos($raw, './') !== false) {
             return '/images/comprofiler/';
         }
-        return rtrim($raw, '/') . '/';
+        // Normalize: resolve ./ segments.
+        $normalized = str_replace('/./', '/', $raw);
+        if (strpos($normalized, '/./') !== false || preg_match('#/\.$#', $normalized)) {
+            return '/images/comprofiler/';
+        }
+        return rtrim($normalized, '/') . '/';
     }
 
     /**
@@ -265,8 +275,15 @@ class ModCbProfileSlimHelper
             return '';
         }
         // Reject embedded control chars / whitespace that enable scheme confusion.
-        if (preg_match('#[\x00-\x20<>"]#', $raw)) {
+        // Single quotes are rejected to prevent href breakout with ENT_COMPAT output.
+        if (preg_match('#[\x00-\x20<>"\']#', $raw)) {
             self::log('Profile URL rejected (unsafe chars): ' . $raw);
+            return '';
+        }
+        // Reject URL-encoded dangerous characters after decoding.
+        $decoded = rawurldecode($raw);
+        if ($decoded !== $raw && preg_match('#[\x00-\x20<>"\']#', $decoded)) {
+            self::log('Profile URL rejected (URL-encoded unsafe chars): ' . $raw);
             return '';
         }
         return $raw;
@@ -286,8 +303,13 @@ class ModCbProfileSlimHelper
         if (!is_string($raw) || $raw === '') {
             return '';
         }
-        if (!preg_match('#^[0-9a-z!%(). +-]+$#i', $raw)) {
+        if (!preg_match('#^[0-9a-z%(). +-]+$#i', $raw)) {
             self::log('CSS value rejected (unsafe chars): ' . $raw);
+            return '';
+        }
+        // Block !important to prevent CSS property override injection.
+        if (preg_match('#!important#i', $raw)) {
+            self::log('CSS value rejected (!important): ' . $raw);
             return '';
         }
         // Block CSS function-call tokens (expression(...), url(...), calc(...),
@@ -301,12 +323,14 @@ class ModCbProfileSlimHelper
         return $raw;
     }
 
+    private static $initFailed = false;
+
     /**
-      * @since 1.2.0
-      */
+     * @since 1.2.0
+     */
     protected static function initCbApi()
     {
-        if (defined(self::CB_LOADED_FLAG)) {
+        if (defined(self::CB_LOADED_FLAG) || self::$initFailed) {
             return;
         }
 
@@ -331,6 +355,8 @@ class ModCbProfileSlimHelper
         // call would skip re-init and silently return empty.
         if (class_exists('CBuser')) {
             define(self::CB_LOADED_FLAG, 1);
+        } else {
+            self::$initFailed = true;
         }
     }
 

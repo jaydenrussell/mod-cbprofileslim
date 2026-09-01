@@ -7,7 +7,7 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.8.1
+ * @version 1.8.2
  */
 defined('_JEXEC') or die;
 
@@ -59,21 +59,21 @@ switch ($avatarAlign) {
 $doc = Factory::getDocument();
 $cssUrl = \Joomla\CMS\Uri\Uri::base() . 'modules/mod_cbprofileslim/css/cbprofileslim.css';
 $doc->addStylesheet($cssUrl);
-$doc->addCustomTag('<link rel="preload" href="' . htmlspecialchars($cssUrl, ENT_QUOTES, 'UTF-8') . '" as="style">');
+$doc->addCustomTag('<link rel="preload" href="' . htmlspecialchars($cssUrl, ENT_QUOTES, 'UTF-8') . '" as="style" type="text/css" onerror="this.onerror=null;this.rel=\'stylesheet\'">');
 
 ?>
 <div id="cbps-header" style="
-  --cbps-container-padding: <?php echo htmlspecialchars($containerPadding, ENT_COMPAT, 'UTF-8'); ?>;
-  --cbps-container-margin: <?php echo htmlspecialchars($containerMargin, ENT_COMPAT, 'UTF-8'); ?>;
+  --cbps-container-padding: <?php echo htmlspecialchars($containerPadding, ENT_QUOTES, 'UTF-8'); ?>;
+  --cbps-container-margin: <?php echo htmlspecialchars($containerMargin, ENT_QUOTES, 'UTF-8'); ?>;
   --cbps-avatar-size: <?php echo (int) $avatarSize; ?>px;
   --cbps-avatar-wrap-size: calc(<?php echo (int) $avatarSize; ?>px + 6px);
   --cbps-align-transform: <?php echo htmlspecialchars($alignTransform, ENT_QUOTES, 'UTF-8'); ?>;
 ">
-  <a href="<?php echo htmlspecialchars($profileUrl); ?>" class="cbps-header-link">
-    <?php if ($displayName): ?><span class="cbps-name"><?php echo htmlspecialchars($displayName); ?></span><?php endif; ?>
+  <a href="<?php echo htmlspecialchars($profileUrl, ENT_QUOTES, 'UTF-8'); ?>" class="cbps-header-link">
+    <?php if ($displayName): ?><span class="cbps-name"><?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?></span><?php endif; ?>
     <span class="cbps-avatar-wrap">
       <?php if ($avatarUrl): ?>
-      <img src="<?php echo htmlspecialchars($avatarUrl); ?>" alt="<?php echo htmlspecialchars($displayName); ?>" class="cbps-avatar" />
+      <img src="<?php echo htmlspecialchars($avatarUrl, ENT_QUOTES, 'UTF-8'); ?>" alt="<?php echo htmlspecialchars($displayName, ENT_QUOTES, 'UTF-8'); ?>" class="cbps-avatar" />
       <?php endif; ?>
     </span>
   </a>

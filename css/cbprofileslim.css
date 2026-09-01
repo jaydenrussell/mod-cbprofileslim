@@ -48,19 +48,37 @@
     #cbps-header {
         display: inline-flex;
         align-items: center;
+        padding: 0 0 0 0;
+        margin: 0;
+    }
+    #cbps-header .cbps-header-link {
+        display: inline-flex;
+        align-items: center;
+    }
+    #cbps-header .cbps-name {
+        line-height: 1.2;
+        white-space: nowrap;
     }
     #cbps-header .cbps-avatar-wrap {
         position: relative;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        width: 38px;
+        height: 38px;
         border-radius: 50%;
         border: 3px solid #ffffff;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        overflow: visible;
+        z-index: 10;
+        transform: none;
     }
     #cbps-header .cbps-avatar {
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         object-fit: cover;
         border: 1px solid #e3ebf5;
+        display: block;
     }
 }
