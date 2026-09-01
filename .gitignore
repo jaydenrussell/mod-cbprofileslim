@@ -16,5 +16,6 @@ Thumbs.db
 *.bak
 *~
 
-# Keep the installable module zip (deliverable) — explicitly tracked
-!mod_cbprofileslim.zip
+# Installable module zips are release assets, not repo content
+mod_cbprofileslim.zip
+*.zip
