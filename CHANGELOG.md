@@ -4,6 +4,12 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2026-09-01
+
+### Changed
+- **Performance**: Extracted inline `<style>` block into external `css/cbprofileslim.css` for browser caching. Dynamic values (padding, margin, avatar size, alignment) are now passed via CSS custom properties (`--cbps-*`) set inline on `#cbps-header`. This reduces per-page inline CSS and allows the stylesheet to be cached across page loads.
+- **Quality**: `JFactory::getDocument()->addStylesheet()` used to enqueue the module stylesheet in Joomla's document object.
+
 ## [1.7.1] - 2026-09-01
 
 ### Fixed
