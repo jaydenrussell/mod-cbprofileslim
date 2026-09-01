@@ -4,6 +4,14 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.1] - 2026-09-01
+
+### Fixed
+- **Bug**: `siteHost()` `class_exists` guard used an incorrect string literal (`\\\\Joomla\\\\CMS\\\\Uri\\\\Uri`), causing the Joomla `Uri` fallback to never activate. Now correctly checks `\Joomla\CMS\Uri\Uri`, restoring reliable same-site absolute avatar URL handling behind reverse proxies and in CLI contexts.
+- **Quality**: Added `@since` tags to all `helper.php` methods for auditability and IDE support.
+- **CI**: Added `phpunit.xml.dist` for IDE/CI consistency.
+- **Tests**: Added `ModuleEntryPointTest.php` covering guest detection, logged-in user flow, and top-level error containment.
+
 ## [1.7.0] - 2026-09-01
 
 ### Changed
