@@ -10,7 +10,7 @@
 		<author>jaydenrussell</author>
 		<infourl>https://github.com/jaydenrussell/mod-cbprofileslim</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/v1.8.2/mod_cbprofileslim.zip</downloadurl>
-		<sha256>TBD</sha256>
+		<sha256>4E4F5B9D816915E77CC3E2312581C5A6C226A061B0EF2F1ECDEFBB6B5E2026B0</sha256>
 		<targetplatform name="joomla" version="4.[0-9]+" />
 		<php_minimum>8.0.0</php_minimum>
 	</update>
