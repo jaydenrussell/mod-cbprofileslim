@@ -54,6 +54,7 @@
     #cbps-header .cbps-header-link {
         display: inline-flex;
         align-items: center;
+        margin: 0 .5rem;
     }
     #cbps-header .cbps-name {
         line-height: 1.2;
