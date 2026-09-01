@@ -23,6 +23,11 @@ namespace Joomla\CMS\Uri {
         {
             return 'https://simcoecurlingclub.ca/';
         }
+
+        public static function base()
+        {
+            return 'https://simcoecurlingclub.ca/';
+        }
     }
 }
 

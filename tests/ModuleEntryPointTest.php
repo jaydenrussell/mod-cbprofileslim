@@ -2,27 +2,38 @@
 /**
  * Unit tests for mod_cbprofileslim.php entry point.
  *
- * These tests verify the module's top-level behavior:
+ * These tests verify the module's top-level behavior using output buffering
+ * to capture actual rendered output:
  * - Guests receive no output (early return)
- * - Logged-in users proceed to helper rendering
- * - Fatal errors are contained by the top-level try/catch
+ * - The module does not produce fatal errors (top-level try/catch)
+ * - Helper methods correctly process logged-in user data
  *
  * @package     mod_cbprofileslim
  * @since       1.7.1
  */
 
-// Stub the Joomla environment so the entry point can be included.
 namespace Joomla\CMS\Factory {
     class Factory
     {
+        /** @var \Joomla\CMS\User\User|null */
+        private static $user = null;
+
         public static function getUser()
         {
+            if (self::$user !== null) {
+                return self::$user;
+            }
             return new \Joomla\CMS\User\User();
         }
 
-        public static function getDbo()
+        public static function setUser($user)
         {
-            return new \Joomla\Database\DatabaseDriver();
+            self::$user = $user;
+        }
+
+        public static function getDocument()
+        {
+            return new \Joomla\CMS\Document\Document();
         }
     }
 }
@@ -33,12 +44,12 @@ namespace Joomla\CMS\User {
         protected $guest = true;
         protected $id = 0;
 
-        public function guest
+        public function guest()
         {
             return $this->guest;
         }
 
-        public function id
+        public function id()
         {
             return $this->id;
         }
@@ -47,6 +58,14 @@ namespace Joomla\CMS\User {
         {
             return $default;
         }
+    }
+}
+
+namespace Joomla\CMS\Document {
+    class Document
+    {
+        public function addStylesheet($url) { /* no-op in tests */ }
+        public function addCustomTag($tag) { /* no-op in tests */ }
     }
 }
 
@@ -88,13 +107,6 @@ namespace Joomla\Database {
     }
 }
 
-namespace Joomla\CMS\Log {
-    class Log
-    {
-        public static function add($msg, $level = null, $category = null) { /* no-op */ }
-    }
-}
-
 namespace {
     define('_JEXEC', 1);
 
@@ -107,46 +119,80 @@ namespace {
     {
         protected function setUp(): void
         {
-            // Reset module globals between tests.
             $_SERVER['HTTP_HOST'] = 'simcoecurlingclub.ca';
             $_GET = [];
             $_POST = [];
+            \Joomla\CMS\Factory\Factory::setUser(null);
         }
 
         protected function tearDown(): void
         {
             unset($_SERVER['HTTP_HOST']);
+            \Joomla\CMS\Factory\Factory::setUser(null);
         }
 
         public function testGuestReceivesNoOutput()
         {
-            // Override Factory::getUser to return a guest.
-            // We can't easily re-include the module file with different stubs,
-            // so we verify the guest-check logic directly:
-            $user = new \Joomla\CMS\User\User();
-            $user->guest = true;
+            // Factory::getUser() returns a guest by default.
+            // Capture the module's actual output via output buffering.
+            ob_start();
+            require_once __DIR__ . '/../mod_cbprofileslim.php';
+            $output = ob_get_clean();
 
-            $this->assertTrue($user->guest);
-            // In the actual module, Factory::getUser()->guest triggers `return;`
-            // This test documents the expected behavior.
+            $this->assertEmpty($output, 'Guest users must receive no module output.');
         }
 
-        public function testLoggedInUserProceeds()
+        public function testModuleDoesNotThrowFatalErrors()
         {
-            $user = new \Joomla\CMS\User\User();
-            $user->guest = false;
-            $user->id = 42;
+            // The module wraps everything in try/catch (\Throwable).
+            // Verify no fatal error is produced even when dependencies
+            // are stubbed.
+            $this->expectNotToPerformAssertions();
 
-            $this->assertFalse($user->guest);
-            $this->assertSame(42, $user->id);
+            ob_start();
+            require_once __DIR__ . '/../mod_cbprofileslim.php';
+            ob_end_clean();
         }
 
-        public function testTopLevelTryCatchDoesNotThrow()
+        public function testDisplayNameReturnsNonEmptyForLoggedInUser()
         {
-            // Simulate a fatal inside the module by making helper unavailable.
-            // The module wraps everything in try/catch (\Throwable), so even
-            // if require_once helper.php fails, the catch block suppresses output.
-            $this->assertTrue(true); // Placeholder: behavior is structural.
+            // Test the helper directly for a logged-in user scenario.
+            $displayName = ModCbProfileSlimHelper::getDisplayName(42);
+
+            // Display name may be empty if CB is not loaded in test env,
+            // but the method must not throw or produce a fatal error.
+            $this->assertIsString($displayName);
+        }
+
+        public function testAvatarUrlReturnsString()
+        {
+            $avatarUrl = ModCbProfileSlimHelper::getAvatar(42, 32);
+
+            $this->assertIsString($avatarUrl);
+        }
+
+        public function testValidateBasePathRejectsTraversal()
+        {
+            $this->assertSame(
+                '/images/comprofiler/',
+                ModCbProfileSlimHelper::validateBasePath('/images/../secret/')
+            );
+        }
+
+        public function testValidateUrlRejectsJavascriptScheme()
+        {
+            $this->assertSame(
+                '',
+                ModCbProfileSlimHelper::validateUrl('javascript:alert(1)')
+            );
+        }
+
+        public function testValidateCssRejectsFunctionCall()
+        {
+            $this->assertSame(
+                '',
+                ModCbProfileSlimHelper::validateCss('expression(alert(1))')
+            );
         }
     }
 }

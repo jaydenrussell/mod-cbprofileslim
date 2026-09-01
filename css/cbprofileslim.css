@@ -43,3 +43,24 @@
 .astroid-header,
 .astroid-header * { z-index: 1; }
 #cbps-header { position: relative; z-index: 10; }
+
+@supports not (--cbps: initial) {
+    #cbps-header {
+        display: inline-flex;
+        align-items: center;
+    }
+    #cbps-header .cbps-avatar-wrap {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 3px solid #ffffff;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+    #cbps-header .cbps-avatar {
+        border-radius: 50%;
+        object-fit: cover;
+        border: 1px solid #e3ebf5;
+    }
+}

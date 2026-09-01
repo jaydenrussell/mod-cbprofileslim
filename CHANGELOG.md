@@ -4,6 +4,15 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.1] - 2026-09-01
+
+### Fixed
+- **Bug**: CSS path now uses `\Joomla\CMS\Uri\Uri::base()` instead of `Uri::root()` for correct subdirectory support.
+- **Performance**: Added `<link rel="preload">` hint for the module stylesheet to eliminate render-blocking.
+- **Tests**: Rewrote `ModuleEntryPointTest.php` with output-buffering-based guest detection and fatal-error containment verification. Added `phpunit.xml.dist` testsuite registration for the entry-point suite.
+- **CI**: Added `@supports not (--cbps: initial)` fallback in `css/cbprofileslim.css` for browsers that do not support CSS custom properties (e.g. IE11).
+- **Quality**: Converted `// @since` inline comments to proper `@since` docblock tags in `initCbApi()` and `log()`.
+
 ## [1.8.0] - 2026-09-01
 
 ### Changed

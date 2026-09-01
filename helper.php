@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.8.0
+ * @version     1.8.1
  */
 defined('_JEXEC') or die;
 
@@ -301,9 +301,11 @@ class ModCbProfileSlimHelper
         return $raw;
     }
 
+    /**
+      * @since 1.2.0
+      */
     protected static function initCbApi()
     {
-        // @since 1.2.0
         if (defined(self::CB_LOADED_FLAG)) {
             return;
         }
@@ -332,9 +334,11 @@ class ModCbProfileSlimHelper
         }
     }
 
+    /**
+     * @since 1.2.1
+     */
     private static function log($msg)
     {
-        // @since 1.2.1
         try {
             Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
         } catch (\Throwable $e) {

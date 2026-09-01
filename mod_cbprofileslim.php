@@ -7,12 +7,11 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.8.0
+ * @version 1.8.1
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Uri\Uri;
 
 try {
 
@@ -58,7 +57,9 @@ switch ($avatarAlign) {
 }
 
 $doc = Factory::getDocument();
-$doc->addStylesheet(Uri::root() . 'modules/mod_cbprofileslim/css/cbprofileslim.css');
+$cssUrl = \Joomla\CMS\Uri\Uri::base() . 'modules/mod_cbprofileslim/css/cbprofileslim.css';
+$doc->addStylesheet($cssUrl);
+$doc->addCustomTag('<link rel="preload" href="' . htmlspecialchars($cssUrl, ENT_QUOTES, 'UTF-8') . '" as="style">');
 
 ?>
 <div id="cbps-header" style="
