@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension type="module" version="3.0" client="site" method="upgrade">
+<extension type="module" version="4.0" client="site" method="upgrade">
 	<name>Community Builder Profile Slim Display</name>
 	<author>jaydenrussell</author>
 	<creationDate>2026-08-19</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.8.1</version>
+	<version>1.8.2</version>
 	<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar. Reads user data via the Community Builder API.</description>
 	<updateservers>
 		<server type="extension" name="Community Builder Profile Slim Display Update" priority="1">https://jaydenrussell.github.io/mod-cbprofileslim/update.xml</server>

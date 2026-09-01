@@ -4,6 +4,19 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.2] - 2026-09-01
+
+### Fixed
+- **Security (P0)**: `validateUrl()` now rejects single quotes (`'`) and URL-encoded dangerous characters to prevent href breakout XSS. All `htmlspecialchars()` calls upgraded to `ENT_QUOTES`.
+- **Security (P2)**: `siteHost()` now validates `HTTP_HOST` against a domain regex to prevent header-injection-based same-origin bypass.
+- **Security (P2)**: `initCbApi()` caches failed CB initialization via `$initFailed` flag to prevent per-request re-initialization attempts (resource exhaustion).
+- **Security (P2)**: `validateBasePath()` now rejects `./` dot segments and normalizes path separators.
+- **Security (P1)**: `validateCss()` rejects `!important` to prevent CSS property override injection.
+- **Security (P1)**: CSS preload link now includes `type="text/css"` and `onerror` fallback to load stylesheet if preload fails.
+- **Security (P1)**: Added `index.html` to `css/` directory to prevent directory listing.
+- **Security (P0)**: Updated `php_minimum` to 8.0.0 (PHP 7.4 reached EOL Nov 2022). Updated `targetplatform` to Joomla 4.x.
+- **UX (P1)**: Completed `@supports not (--cbps: initial)` fallback to cover all CSS properties for IE11 (width, height, position, z-index, transform, overflow, display).
+
 ## [1.8.1] - 2026-09-01
 
 ### Fixed
