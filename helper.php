@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  CB Profile Slim Display
- * @version     1.8.2
+ * @version     1.8.3
  */
 defined('_JEXEC') or die;
 
