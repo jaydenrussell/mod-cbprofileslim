@@ -7,7 +7,7 @@
  * dependency on the sccard/cblogin module being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.8.3
+ * @version 1.8.4
  */
 defined('_JEXEC') or die;
 
