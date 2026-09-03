@@ -15,7 +15,7 @@ class SanitizerTest extends TestCase
         unset($_SERVER['HTTP_HOST']);
     }
     // ---- Avatar sanitizer (Critical fix regression) ----
-    public function avatarProvider()
+    public static function avatarProvider()
     {
         return [
             'flat filename'            => ['normal.jpg', '/images/comprofiler/normal.jpg'],
@@ -53,7 +53,7 @@ class SanitizerTest extends TestCase
     }
 
     // ---- Profile URL validator (MEDIUM fix regression) ----
-    public function urlProvider()
+    public static function urlProvider()
     {
         return [
             'https default'   => ['https://simcoecurlingclub.ca/scc-profile', 'https://simcoecurlingclub.ca/scc-profile'],
@@ -76,7 +76,7 @@ class SanitizerTest extends TestCase
     }
 
     // ---- CSS validator (MEDIUM fix regression) ----
-    public function cssProvider()
+    public static function cssProvider()
     {
         return [
             'default pad'     => ['0 0 0 0', '0 0 0 0'],
@@ -101,7 +101,7 @@ class SanitizerTest extends TestCase
     }
 
     // ---- Base path validator (H1 regression: reject traversal / empty segments) ----
-    public function basePathProvider()
+    public static function basePathProvider()
     {
         return [
             'default'          => ['/images/comprofiler/', '/images/comprofiler/'],
