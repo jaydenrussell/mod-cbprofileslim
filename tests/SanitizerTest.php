@@ -48,6 +48,7 @@ class SanitizerTest extends TestCase
     private static function sanitizeAvatar($raw)
     {
         $rm = new \ReflectionMethod('ModCbProfileSlimHelper', 'sanitizeAvatarUrl');
+        $rm->setAccessible(true);
         return $rm->invoke(null, $raw);
     }
 
