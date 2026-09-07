@@ -8,7 +8,7 @@
  * extension being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.8.9
+ * @version 1.9.0
  */
 defined('_JEXEC') or die;
 
@@ -23,9 +23,21 @@ if ($user->guest) {
 
 require_once __DIR__ . '/helper.php';
 
-$profileUrl   = isset($params) ? ModProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
-if ($profileUrl === '') {
-    $profileUrl = ModProfileSlimHelper::profileUrl((int) $user->id);
+$profileItemid = isset($params) ? (int) $params->get('profile_itemid', 0) : 0;
+
+// Canonical CB menu resolver (collision-safe with cblogin-modern-blue).
+if (is_file(__DIR__ . '/cbmenu.php')) {
+    require_once __DIR__ . '/cbmenu.php';
+}
+$cbMenu = class_exists('SccCbMenuResolver') ? SccCbMenuResolver::instance() : null;
+
+if ($cbMenu) {
+    $profileUrl = $cbMenu->getProfileUrl((int) $user->id, $profileItemid);
+} else {
+    $profileUrl = isset($params) ? ModProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
+    if ($profileUrl === '') {
+        $profileUrl = ModProfileSlimHelper::profileUrl((int) $user->id);
+    }
 }
 $avatarBasePath = isset($params) ? ModProfileSlimHelper::validateBasePath($params->get('avatar_base_path', '/images/')) : '/images/';
 if ($avatarBasePath === '') {
