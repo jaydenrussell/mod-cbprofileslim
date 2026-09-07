@@ -8,7 +8,7 @@
  * extension being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.9.0
+ * @version 1.9.1
  */
 defined('_JEXEC') or die;
 
@@ -26,12 +26,14 @@ require_once __DIR__ . '/helper.php';
 $profileItemid = isset($params) ? (int) $params->get('profile_itemid', 0) : 0;
 
 // Canonical CB menu resolver (collision-safe with cblogin-modern-blue).
+// Only used when Community Builder is actually installed; otherwise the
+// module renders the native Joomla profile link.
 if (is_file(__DIR__ . '/cbmenu.php')) {
     require_once __DIR__ . '/cbmenu.php';
 }
 $cbMenu = class_exists('SccCbMenuResolver') ? SccCbMenuResolver::instance() : null;
 
-if ($cbMenu) {
+if ($cbMenu && ModProfileSlimHelper::isCbInstalled()) {
     $profileUrl = $cbMenu->getProfileUrl((int) $user->id, $profileItemid);
 } else {
     $profileUrl = isset($params) ? ModProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
