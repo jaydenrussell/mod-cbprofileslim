@@ -23,7 +23,7 @@ class ModProfileSlimHelper
     {
         if (self::cbAvailable()) {
             try {
-                $cbUser = \CBuser::getInstance((int) $userId, false);
+                $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
                     $cbName = $cbUser->getField('typename', null, 'raw');
                     if (is_string($cbName) && $cbName !== '') {
@@ -65,7 +65,7 @@ class ModProfileSlimHelper
 
         if (self::cbAvailable()) {
             try {
-                $cbUser = \CBuser::getInstance((int) $userId, false);
+                $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser) {
                     // Method A: raw relative path
                     $raw = $cbUser->getField('avatar', null, 'csv');
@@ -245,7 +245,7 @@ class ModProfileSlimHelper
     {
         if (self::cbAvailable()) {
             try {
-                $cbUser = \CBuser::getInstance((int) $userId, false);
+                $cbUser = CBuser::getInstance((int) $userId, false);
                 if ($cbUser && method_exists($cbUser, 'userProfileURL')) {
                     $url = $cbUser->userProfileURL();
                     if (is_string($url) && $url !== '') {
@@ -377,25 +377,21 @@ class ModProfileSlimHelper
             return false;
         }
 
-        if (!defined('CB_LOADED')) {
-            include_once $cbFoundation;
-        }
-
-        if (class_exists('CBuser')) {
-            self::$cbAvailable = true;
-            return true;
-        }
-
+        include_once $cbFoundation;
         if (function_exists('cbimport')) {
             try {
                 cbimport('cb.html');
                 cbimport('cb.database');
-                if (isset($GLOBALS['_PLUGINS']) && method_exists($GLOBALS['_PLUGINS'], 'loadPluginGroup')) {
-                    $GLOBALS['_PLUGINS']->loadPluginGroup('user');
-                }
             } catch (\Throwable $e) {
                 self::log('cbimport failed: ' . $e->getMessage());
             }
+        }
+        try {
+            if (isset($GLOBALS['_PLUGINS']) && method_exists($GLOBALS['_PLUGINS'], 'loadPluginGroup')) {
+                $GLOBALS['_PLUGINS']->loadPluginGroup('user');
+            }
+        } catch (\Throwable $e) {
+            self::log('loadPluginGroup failed: ' . $e->getMessage());
         }
 
         if (class_exists('CBuser')) {
