@@ -10,9 +10,15 @@
  * and menu assignments copied onto the new `mod_profileslim` instance, and then
  * the legacy instance, its extension record and files are removed.
  *
- * Because the element name changed, the Joomla update channel cannot match the
- * old element, so upgrading is a manual "Extensions → Manage → Install" of the
- * zip. No configuration is lost during that install.
+ * Update continuity: the repository keeps two update feeds. `update.xml`
+ * (the URL existing `mod_cbprofileslim` installs are hardwired to, which GitHub
+ * redirects to this repository after the rename) advertises the SAME zip under
+ * the legacy element `mod_cbprofileslim`, so prior versions are offered the
+ * upgrade automatically through Extensions → Update. `update-profileslim.xml`
+ * serves the renamed element and is registered by this manifest going forward.
+ * Because the legacy update entry matches the OLD element, Joomla treats the
+ * zip as a new install of `mod_profileslim`, and the postflight below performs
+ * the non-breaking migration. No configuration is lost during that install.
  *
  * @package     mod_profileslim
  * @since       1.10.0
@@ -60,6 +66,7 @@ class ModProfileslimInstallerScript
 
 		$this->copyToNewModule($new);
 		$this->removeLegacy();
+		$this->removeLegacyUpdateSites();
 	}
 
 	private function loadModuleRow($element)
@@ -131,6 +138,42 @@ class ModProfileslimInstallerScript
 		if (is_dir($oldDir))
 		{
 			$this->removeDirectory($oldDir);
+		}
+	}
+
+	private function removeLegacyUpdateSites()
+	{
+		$db = JFactory::getDBO();
+
+		$q = $db->getQuery(true);
+		$q->select($db->quoteName('update_site_id'))
+			->from($db->quoteName('#__update_sites'))
+			->where($db->quoteName('location') . ' LIKE ' . $db->quote('%mod-cbprofileslim%'));
+		$db->setQuery($q);
+
+		foreach ((array) $db->loadAssocList() as $site)
+		{
+			$id = (int) $site['update_site_id'];
+			if ($id <= 0)
+			{
+				continue;
+			}
+
+			// Drop the orphaned update-site → extension mapping first, then the
+			// stale feed row so the legacy URL stops being polled forever.
+			$db->setQuery(
+				$db->getQuery(true)
+					->delete($db->quoteName('#__update_sites_extensions'))
+					->where($db->quoteName('update_site_id') . ' = ' . $id)
+			);
+			$db->execute();
+
+			$db->setQuery(
+				$db->getQuery(true)
+					->delete($db->quoteName('#__update_sites'))
+					->where($db->quoteName('update_site_id') . ' = ' . $id)
+			);
+			$db->execute();
 		}
 	}
 
