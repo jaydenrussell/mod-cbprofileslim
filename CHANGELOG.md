@@ -4,6 +4,15 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.1] - 2026-09-07
+
+### Fixed
+- **Native Joomla without CB**: v1.9.0 always used the vendored `SccCbMenuResolver` when `cbmenu.php` was present, so on a site WITHOUT Community Builder the profile link resolved to a dead `index.php?option=com_comprofiler&view=userprofile` route. `mod_cbprofileslim.php` now gates the resolver behind `ModProfileSlimHelper::isCbInstalled()` — a lightweight file check that does NOT trigger CB API initialization. Without CB, the module falls back to the previous routing (`profile_url` param, then the native Joomla `com_users` profile view).
+- **No unnecessary CB init**: Added `isCbInstalled()` to `helper.php`; the resolver decision no longer forces `cbimport()` / `loadPluginGroup('user')` for a mere link.
+
+### Changed
+- Confirmed Joomla 3.x-only targeting (`update.xml` `targetplatform joomla "3.[0-9]+"`, `php_minimum 7.4`).
+
 ## [1.9.0] - 2026-09-07
 
 ### Added
