@@ -4,7 +4,38 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.8.2] - 2026-09-01
+## [1.8.9] - 2026-09-07
+
+### Fixed
+- **Fatal error (module never rendered)**: `mod_cbprofileslim.php` called the nonexistent method `ModProfileSlimHelper::joomlaProfileUrl()`. The top-level `try/catch` swallowed the resulting `Call to undefined method` fatal, so the module output nothing on the frontend. Now correctly calls `ModProfileSlimHelper::profileUrl()`.
+
+## [1.8.8] - 2026-09-07
+
+### Fixed
+- **CB initialization**: `cbAvailable()` now properly initializes Community Builder by calling `include_once` the foundation file, `cbimport()`, and `loadPluginGroup('user')` before checking `class_exists('CBuser')`. Previously it only checked if the class existed without initializing, causing module failures when CB was installed.
+- **CBuser namespace**: Removed backslash prefix from `\CBuser` references — changed to `CBuser` for proper global namespace resolution in PHP.
+
+## [1.8.7] - 2026-09-07
+
+### Changed
+- **Dual avatar support**: `getAvatar()` now checks Community Builder first (if installed), then falls back to Joomla's `#__user_profiles` table. Checks multiple profile keys (`avatar`, `profile.avatar`, `user.avatar`, `avatar_url`, `profile_picture`) to support extensions that store avatars in Joomla's native profile system.
+- **Dual profile URL support**: `profileUrl()` checks if CB is available → uses CB's `userProfileURL()` (which CB intercepts/redirects when CB is installed). Without CB, falls back to Joomla's native `index.php?option=com_users&view=profile&id=X`.
+- **Dual display name support**: `getDisplayName()` checks CB first, then Joomla native `$user->get('name')` / `$user->get('username')`.
+- **CB availability detection**: Added `cbAvailable()` method that checks for CB foundation file, initializes CB if present, and caches results per request. No longer uses a global `CB_LOADED_FLAG`.
+- **DB fallback**: Avatar DB fallback now queries `#__user_profiles` with `LIKE '%avatar%'` to match multiple possible profile keys.
+
+## [1.8.6] - 2026-09-07
+
+### Changed
+- **Rename**: Module renamed from "Community Builder Profile Slim Display" to "Joomla Profile Slim Display". All references to Community Builder stripped from code, XML manifests, and language files.
+- **Profile links**: Profile URL now defaults to Joomla's built-in user profile (`index.php?option=com_users&view=profile&id=X`) instead of Community Builder's `cbProfileUrl()`.
+- **Display names**: `getDisplayName()` now uses Joomla's native `$user->get('name')` / `$user->get('username')` instead of CB's `getField('typename')`.
+- **Avatars**: `getAvatar()` now reads avatar data from Joomla's `#__user_profiles` table instead of CB's `#__comprofiler`. DB fallback queries `#__user_profiles` instead of `#__comprofiler`.
+- **Removed**: All `initCbApi()`, `cbProfileUrl()`, `CB_LOADED_FLAG`, `siteHost()` methods and Community Builder API dependencies removed from `helper.php`.
+- **CSS**: Renamed `cbprofileslim.css` to `profile-slim.css` with class prefixes updated from `cbps-` to `ps-`.
+- **Avatar base path**: Default changed from `/images/comprofiler/` to `/images/`.
+
+## [1.8.5] - 2026-09-07
 
 ### Fixed
 - **Security (P0)**: `validateUrl()` now rejects single quotes (`'`) and URL-encoded dangerous characters to prevent href breakout XSS. All `htmlspecialchars()` calls upgraded to `ENT_QUOTES`.
