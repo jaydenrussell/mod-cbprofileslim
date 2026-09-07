@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" version="4.0" client="site" method="upgrade">
-	<name>Community Builder Profile Slim Display</name>
+	<name>Joomla Profile Slim Display</name>
 	<author>Jayden Russell</author>
 	<creationDate>September 2026</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
-	<version>1.8.5</version>
-	<description>Standalone Joomla module: displays the logged-in Community Builder user's display name and avatar in the top header navbar. Reads user data via the Community Builder API.</description>
+	<version>1.8.6</version>
+	<description>Standalone Joomla module: displays the logged-in user's display name and avatar in the top header navbar. Uses Joomla's built-in profile system.</description>
 	<updateservers>
-		<server type="extension" name="Community Builder Profile Slim Display Update" priority="1">https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml</server>
+		<server type="extension" name="Joomla Profile Slim Display Update" priority="1">https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml</server>
 	</updateservers>
 	<files>
 		<filename module="mod_cbprofileslim">mod_cbprofileslim.php</filename>
@@ -38,7 +38,7 @@
 					type="text"
 					label="MOD_CBPROFILESLIM_AVATAR_BASE_PATH_LABEL"
 					description="MOD_CBPROFILESLIM_AVATAR_BASE_PATH_DESC"
-					default="/images/comprofiler/"
+					default="/images/"
 					size="40"
 					filter="string"
 				/>
