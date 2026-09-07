@@ -1,8 +1,8 @@
 <?php
 /**
- * @package     mod_cbprofileslim
+ * @package     mod_profileslim
  * @subpackage  Joomla Profile Slim Display
- * @version     1.9.2
+ * @version     1.10.0
  */
 defined('_JEXEC') or die;
 
@@ -442,7 +442,7 @@ class ModProfileSlimHelper
     private static function log($msg)
     {
         try {
-            Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
+            Log::add('mod_profileslim: ' . $msg, Log::WARNING, 'mod_profileslim');
         } catch (\Throwable $e) {
         }
     }
