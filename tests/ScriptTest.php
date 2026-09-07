@@ -73,6 +73,18 @@ namespace {
             );
         }
 
+        private function seedUpdateSites($db)
+        {
+            // Stale legacy feed the old element was hardwired to (GitHub redirects
+            // it to this repo's update.xml after the rename).
+            $db->updateSites[] = array('update_site_id' => 5, 'location' => 'https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml', 'enabled' => '1');
+            $db->updateSiteExt[] = array('update_site_id' => 5, 'extension_id' => 99);
+
+            // Current feed registered by the new manifest — must never be touched.
+            $db->updateSites[] = array('update_site_id' => 7, 'location' => 'https://raw.githubusercontent.com/jaydenrussell/mod-profileslim/master/update-profileslim.xml', 'enabled' => '1');
+            $db->updateSiteExt[] = array('update_site_id' => 7, 'extension_id' => 100);
+        }
+
         public function testFreshInstallIsNoOpWithoutLegacy()
         {
             $db = \JFactory::getDBO();
@@ -159,6 +171,41 @@ namespace {
 
             $this->assertFileDoesNotExist($oldDir . '/mod_cbprofileslim.php');
             $this->assertDirectoryDoesNotExist($oldDir);
+        }
+
+        public function testLegacyUpdateSiteIsCleanedUp()
+        {
+            $db = \JFactory::getDBO();
+            $this->seedLegacy($db);
+            $this->seedNew($db);
+            $this->seedUpdateSites($db);
+
+            $script = new \ModProfileslimInstallerScript();
+            $script->preflight('install', null);
+            $script->postflight('install', null);
+
+            // The stale mod-cbprofileslim feed and its mapping are gone…
+            $this->assertCount(1, $db->updateSites);
+            $this->assertSame(7, (int) $db->updateSites[0]['update_site_id']);
+            $this->assertCount(1, $db->updateSiteExt);
+            $this->assertSame(7, (int) $db->updateSiteExt[0]['update_site_id']);
+
+            $this->assertContains('delete #__update_sites', $db->executed);
+            $this->assertContains('delete #__update_sites_extensions', $db->executed);
+        }
+
+        public function testUpdateSiteCleanupSkipsNonLegacyFeeds()
+        {
+            $db = \JFactory::getDBO();
+            $this->seedUpdateSites($db);
+
+            // No legacy module → migration (and its site sweep) is a no-op.
+            $script = new \ModProfileslimInstallerScript();
+            $script->preflight('install', null);
+            $script->postflight('install', null);
+
+            $this->assertCount(2, $db->updateSites);
+            $this->assertCount(2, $db->updateSiteExt);
         }
     }
 }
