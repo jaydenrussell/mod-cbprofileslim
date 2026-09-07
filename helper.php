@@ -377,7 +377,11 @@ class ModProfileSlimHelper
             return false;
         }
 
-        include_once $cbFoundation;
+        try {
+            include_once @$cbFoundation;
+        } catch (\Throwable $e) {
+            self::log('cbFoundation include failed: ' . $e->getMessage());
+        }
         if (function_exists('cbimport')) {
             try {
                 cbimport('cb.html');
