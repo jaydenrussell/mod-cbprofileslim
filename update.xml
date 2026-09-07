@@ -6,12 +6,12 @@
 		<element>mod_cbprofileslim</element>
 		<type>module</type>
 		<client>site</client>
-		<version>1.8.8</version>
+		<version>1.8.9</version>
 		<author>Jayden Russell</author>
 		<date>September 2026</date>
 		<infourl>https://github.com/jaydenrussell/mod-cbprofileslim</infourl>
-		<downloadurl>https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/v1.8.8/mod_cbprofileslim.zip</downloadurl>
-		<sha256>EAC0E471A2A770814DCB814C222456A3FAE0502A11CA95B6A0BDC9B0249A8D9B</sha256>
+		<downloadurl>https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/v1.8.9/mod_cbprofileslim.zip</downloadurl>
+		<sha256>BA0348CD272740E0435C4CAB1F8DE9F939DB7933A4E091395DB69C6FB1449F79</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
