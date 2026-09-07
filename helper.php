@@ -1,43 +1,38 @@
 <?php
 /**
  * @package     mod_cbprofileslim
- * @subpackage  CB Profile Slim Display
- * @version     1.8.5
+ * @subpackage  Joomla Profile Slim Display
+ * @version     1.8.6
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
 use Joomla\CMS\Log\Log;
+use Joomla\CMS\Router\Route;
 
-class ModCbProfileSlimHelper
+class ModProfileSlimHelper
 {
-    private const CB_LOADED_FLAG = 'MOD_CBPROFILESLIM_CB_LOADED';
-
     /**
      * @param int $userId
      * @return string
-     * @since 1.2.5
+     * @since 1.2.0
      */
     public static function getDisplayName($userId)
     {
-        $name = '';
-        self::initCbApi();
-
-        if (class_exists('CBuser')) {
-            try {
-                $cbUser = CBuser::getInstance((int) $userId, false);
-                if ($cbUser) {
-                    $cbName = $cbUser->getField('typename', null, 'raw');
-                    if (is_string($cbName) && $cbName !== '') {
-                        $name = $cbName;
-                    }
-                }
-            } catch (\Throwable $e) {
-                self::log('getDisplayName failed: ' . $e->getMessage());
+        try {
+            $user = Factory::getUser((int) $userId);
+            $name = $user->get('name');
+            if (is_string($name) && $name !== '') {
+                return $name;
             }
+            $username = $user->get('username');
+            if (is_string($username) && $username !== '') {
+                return $username;
+            }
+        } catch (\Throwable $e) {
+            self::log('getDisplayName failed: ' . $e->getMessage());
         }
-
-        return $name;
+        return '';
     }
 
     /**
@@ -48,47 +43,29 @@ class ModCbProfileSlimHelper
      * @return string
      * @since 1.4.1
      */
-    public static function getAvatar($userId, $size = 32, $allowDbFallback = false, $basePath = '/images/comprofiler/')
+    public static function getAvatar($userId, $size = 32, $allowDbFallback = false, $basePath = '/images/')
     {
         $raw = '';
 
-        self::initCbApi();
-        if (class_exists('CBuser')) {
-            try {
-                $cbUser = CBuser::getInstance((int) $userId, false);
-                if ($cbUser) {
-                    // Method A: raw relative path
-                    $raw = $cbUser->getField('avatar', null, 'csv');
-                    // Method B: parse src from rendered HTML
-                    if (empty($raw)) {
-                        $html = $cbUser->getField('avatar', null, 'html', 'none', 'profile', 0, false);
-                        if (is_string($html)) {
-                            if (preg_match('#src="([^"]+)"#i', $html, $m)) {
-                                $raw = $m[1];
-                            } elseif (preg_match("#src='([^']+)'#i", $html, $m)) {
-                                $raw = $m[1];
-                            }
-                        }
-                    }
-                    // Method C: direct property
-                    if (empty($raw) && !empty($cbUser->avatar)) {
-                        $raw = $cbUser->avatar;
-                    }
-                }
-            } catch (\Throwable $e) {
-                self::log('getAvatar CB path failed: ' . $e->getMessage());
+        try {
+            $user = Factory::getUser((int) $userId);
+            $avatar = $user->get('avatar');
+            if (is_string($avatar) && $avatar !== '') {
+                $raw = $avatar;
             }
+        } catch (\Throwable $e) {
+            self::log('getAvatar user profile failed: ' . $e->getMessage());
         }
 
-        // DB fallback (opt-in)
         if ($raw === '' && $allowDbFallback) {
             try {
                 $db = Factory::getDbo();
                 $db->setQuery(
                     $db->getQuery(true)
-                        ->select($db->quoteName('avatar'))
-                        ->from($db->quoteName('#__comprofiler'))
+                        ->select($db->quoteName('profile_value'))
+                        ->from($db->quoteName('#__user_profiles'))
                         ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
+                        ->where($db->quoteName('profile_key') . ' = ' . $db->quote('avatar'))
                 );
                 $dbAvatar = $db->loadResult();
                 if (is_string($dbAvatar) && $dbAvatar !== '' && $dbAvatar !== '0') {
@@ -103,24 +80,22 @@ class ModCbProfileSlimHelper
     }
 
     /**
-     * Accepts a CB avatar value that is either a relative path (flat filename OR a
-     * subfolder like 383_abc/xyz.jpg) OR an absolute URL on the SITE'S OWN host
-     * (e.g. https://mysite.com/images/comprofiler/x.jpg) — the foreign host is
-     * stripped, leaving a same-origin relative path. Rejects foreign/abs URLs,
-     * javascript:/data: schemes, protocol-relative (//), backslashes, and "..".
+     * Accepts an avatar value that is either a relative path, a URL on
+     * the site's own host, or a raw avatar filename. Strips foreign
+     * hosts, javascript:/data: schemes, protocol-relative (//),
+     * backslashes, and "..".
      *
      * @param string $raw
      * @param string $basePath
      * @return string
      * @since 1.5.1
      */
-    private static function sanitizeAvatarUrl($raw, $basePath = '/images/comprofiler/')
+    private static function sanitizeAvatarUrl($raw, $basePath = '/images/')
     {
         if (!is_string($raw) || $raw === '') {
             return '';
         }
 
-        // Same-site absolute URL? (http:// or https://)
         if (preg_match('#^https?://#i', $raw)) {
             $host = parse_url($raw, PHP_URL_HOST);
             $siteHost = self::siteHost();
@@ -133,24 +108,20 @@ class ModCbProfileSlimHelper
                 return '';
             }
             $raw = $path;
-        } elseif (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {   // other scheme (javascript:, data:)
+        } elseif (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {
             self::log('Avatar rejected: scheme present: ' . $raw);
             return '';
         }
-        if (strpos($raw, '//') === 0) {                          // protocol-relative
+        if (strpos($raw, '//') === 0) {
             self::log('Avatar rejected: protocol-relative: ' . $raw);
             return '';
         }
-        if (strpos($raw, '\\') !== false) {                      // Windows/abs path
+        if (strpos($raw, '\\') !== false) {
             return '';
         }
 
-        // Strip leading slash(es) so the value is always relative to $basePath.
         $rel = ltrim($raw, '/');
 
-        // Allow only relative path segments: [seg]/[seg], safe chars per segment,
-        // no ".." traversal, no empty segments. Rejects anything else (incl. flat
-        // filenames, which match too).
         if ($rel === '' || !preg_match('#^(?:[a-zA-Z0-9_.-]+/)*[a-zA-Z0-9_.-]+$#', $rel)) {
             self::log('Avatar rejected: invalid path: ' . $raw);
             return '';
@@ -161,8 +132,6 @@ class ModCbProfileSlimHelper
         }
 
         $base = rtrim($basePath, '/') . '/';
-        // If CB already returned the full base-relative path (e.g. the configured
-        // image dir prefix), use it as-is instead of double-prefixing.
         if (strpos($rel, ltrim($base, '/')) === 0) {
             return $base . substr($rel, strlen(ltrim($base, '/')));
         }
@@ -184,8 +153,6 @@ class ModCbProfileSlimHelper
         }
         if (!empty($_SERVER['HTTP_HOST'])) {
             $host = strtolower(preg_replace('/:[0-9]+$/', '', $_SERVER['HTTP_HOST']));
-            // Reject non-domain values (IP addresses, internal hosts) from
-            // the Host header to prevent header-injection-based bypass.
             if (preg_match('#^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$#', $host)
                 && !preg_match('#^\d{1,3}(\.\d{1,3}){3}$#', $host)) {
                 return $host;
@@ -195,64 +162,18 @@ class ModCbProfileSlimHelper
     }
 
     /**
-     * Validates the configured avatar base directory. Only allows a root-relative
-     * path of safe characters with a leading slash. Scheme/protocol-relative/backslash
-     * inputs are rejected and fall back to the standard CB location.
-     *
-     * @param string $raw
-     * @return string
-     * @since 1.5.8
-     */
-    public static function validateBasePath($raw)
-    {
-        if (!is_string($raw) || $raw === '') {
-            return '/images/comprofiler/';
-        }
-        if (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {
-            return '/images/comprofiler/';
-        }
-        if (strpos($raw, '//') === 0 || strpos($raw, '\\\\') !== false) {
-            return '/images/comprofiler/';
-        }
-        if (!preg_match('#^/[a-zA-Z0-9_./-]+$#', $raw)) {
-            return '/images/comprofiler/';
-        }
-        // Reject path traversal (..), empty segments (//), and dot segments (./).
-        if (strpos($raw, '..') !== false || strpos($raw, '//') !== false || strpos($raw, './') !== false) {
-            return '/images/comprofiler/';
-        }
-        // Normalize: resolve ./ segments.
-        $normalized = str_replace('/./', '/', $raw);
-        if (strpos($normalized, '/./') !== false || preg_match('#/\.$#', $normalized)) {
-            return '/images/comprofiler/';
-        }
-        return rtrim($normalized, '/') . '/';
-    }
-
-    /**
-     * Builds a Community Builder profile URL for the given user via the CB API.
-     * Returns '' if CB is unavailable (caller then renders an unlinked label).
+     * Returns the default Joomla profile URL for the given user.
      *
      * @param int $userId
      * @return string
-     * @since 1.5.4
+     * @since 1.6.0
      */
-    public static function cbProfileUrl($userId)
+    public static function joomlaProfileUrl($userId)
     {
-        self::initCbApi();
-        if (!class_exists('CBuser')) {
-            return '';
-        }
         try {
-            $cbUser = CBuser::getInstance((int) $userId, false);
-            if ($cbUser && method_exists($cbUser, 'userProfileURL')) {
-                $url = $cbUser->userProfileURL();
-                if (is_string($url) && $url !== '') {
-                    return self::validateUrl($url);
-                }
-            }
+            return Route::_('index.php?option=com_users&view=profile&id=' . (int) $userId);
         } catch (\Throwable $e) {
-            self::log('cbProfileUrl failed: ' . $e->getMessage());
+            self::log('joomlaProfileUrl failed: ' . $e->getMessage());
         }
         return '';
     }
@@ -275,20 +196,15 @@ class ModCbProfileSlimHelper
             self::log('Profile URL rejected (not http(s)): ' . $raw);
             return '';
         }
-        // Reject embedded control chars / whitespace that enable scheme confusion.
-        // Single quotes are rejected to prevent href breakout with ENT_COMPAT output.
-        // Backslashes are rejected to prevent Windows-style path injection.
         if (preg_match('#[\x00-\x20<>"\'\\\\]#', $raw)) {
             self::log('Profile URL rejected (unsafe chars): ' . $raw);
             return '';
         }
-        // Reject URL-encoded dangerous characters after decoding.
         $decoded = rawurldecode($raw);
         if ($decoded !== $raw && preg_match('#[\x00-\x20<>"\']#', $decoded)) {
             self::log('Profile URL rejected (URL-encoded unsafe chars): ' . $raw);
             return '';
         }
-        // Additional protection: reject double-encoded dangerous chars.
         $doubleDecoded = rawurldecode($decoded);
         if ($decoded !== $doubleDecoded && preg_match('#[\x00-\x20<>"\']#', $doubleDecoded)) {
             self::log('Profile URL rejected (double-encoded unsafe chars): ' . $raw);
@@ -315,15 +231,10 @@ class ModCbProfileSlimHelper
             self::log('CSS value rejected (unsafe chars): ' . $raw);
             return '';
         }
-        // Block !important to prevent CSS property override injection.
         if (preg_match('#!important#i', $raw)) {
             self::log('CSS value rejected (!important): ' . $raw);
             return '';
         }
-        // Block CSS function-call tokens (expression(...), url(...), calc(...),
-        // var(...), etc.). Padding/margin values never need a function call; a
-        // '(' immediately after a letter is the signature of one. This closes
-        // the legacy expression()/javascript: CSS-injection vector.
         if (preg_match('#[a-z]\s*\(#i', $raw)) {
             self::log('CSS value rejected (function call): ' . $raw);
             return '';
@@ -331,58 +242,48 @@ class ModCbProfileSlimHelper
         return $raw;
     }
 
+    /**
+     * Validates the configured avatar base directory. Only allows a root-relative
+     * path of safe characters with a leading slash.
+     *
+     * @param string $raw
+     * @return string
+     * @since 1.5.8
+     */
+    public static function validateBasePath($raw)
+    {
+        if (!is_string($raw) || $raw === '') {
+            return '/images/';
+        }
+        if (preg_match('#^[a-z][a-z0-9+.\\-]*:#i', $raw)) {
+            return '/images/';
+        }
+        if (strpos($raw, '//') === 0 || strpos($raw, '\\\\') !== false) {
+            return '/images/';
+        }
+        if (!preg_match('#^/[a-zA-Z0-9_./-]+$#', $raw)) {
+            return '/images/';
+        }
+        if (strpos($raw, '..') !== false || strpos($raw, '//') !== false || strpos($raw, './') !== false) {
+            return '/images/';
+        }
+        $normalized = str_replace('/./', '/', $raw);
+        if (strpos($normalized, '/./') !== false || preg_match('#/\.$#', $normalized)) {
+            return '/images/';
+        }
+        return rtrim($normalized, '/') . '/';
+    }
+
     private static $initFailed = false;
 
     /**
      * @since 1.2.0
      */
-    protected static function initCbApi()
-    {
-        // Reset failed-init flag if CB foundation file now exists (e.g. newly installed).
-        if (!defined(self::CB_LOADED_FLAG) && self::$initFailed
-            && file_exists(JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php')) {
-            self::$initFailed = false;
-        }
-
-        if (defined(self::CB_LOADED_FLAG) || self::$initFailed) {
-            return;
-        }
-
-        $cbFoundation = JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php';
-        if (file_exists($cbFoundation)) {
-            include_once $cbFoundation;
-        }
-        if (function_exists('cbimport')) {
-            cbimport('cb.html');
-            cbimport('cb.database');
-        }
-        try {
-            if (isset($GLOBALS['_PLUGINS']) && method_exists($GLOBALS['_PLUGINS'], 'loadPluginGroup')) {
-                $GLOBALS['_PLUGINS']->loadPluginGroup('user');
-            }
-        } catch (\Throwable $e) {
-            self::log('loadPluginGroup failed: ' . $e->getMessage());
-        }
-
-        // Only mark initialized if CB actually became available. Otherwise a
-        // transient failure would be cached for the whole request: every later
-        // call would skip re-init and silently return empty.
-        if (class_exists('CBuser')) {
-            define(self::CB_LOADED_FLAG, 1);
-        } else {
-            self::$initFailed = true;
-        }
-    }
-
-    /**
-     * @since 1.2.1
-     */
-    private static function log($msg)
+    protected static function log($msg)
     {
         try {
             Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
         } catch (\Throwable $e) {
-            // logging must never throw
         }
     }
 }
