@@ -1,8 +1,18 @@
 # Changelog
 
-All notable changes to `mod_cbprofileslim` are documented in this file.
+All notable changes to `mod_profileslim` (formerly `mod_cbprofileslim`) are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.10.0] - 2026-09-07
+
+### Changed
+- **Element renamed `mod_cbprofileslim` → `mod_profileslim`** (repository → `mod-profileslim`). The "CB" prefix no longer implies Community Builder is the primary function: the module is now explicitly a native Joomla extension that optionally uses CB for profile-link resolution only. Renamed files (`mod_profileslim.php`, `mod_profileslim.xml`, `en-GB.mod_profileslim.ini`/`.sys.ini`), language keys (`MOD_PROFILESLIM_*`) and the log category (`mod_profileslim`). Manifest, update feed, language descriptions and docs repositioned Joomla-first, with Community Builder referenced only as an optional post-native compatibility layer.
+- **Non-breaking upgrade path**: new `script.php` (`ModProfileslimInstallerScript`) migrates an existing `mod_cbprofileslim` module instance onto the new element — params, title, note, position, ordering, published/access, showtitle, language and `#__modules_menu` assignments are copied to the new `mod_profileslim` instance; the legacy instance, `#__extensions` record and `modules/mod_cbprofileslim` folder are then removed. Because the element changed, install the new zip manually (the update channel cannot match the old element); no configuration is lost.
+- **Version-skew expected version** bumped to `1.10.0` (`SccCbMenuResolver::VERSION` in `cbmenu.php`).
+
+### Fixed
+- **Stale PHPUnit suites aligned with current behavior**: `SanitizerTest` class references updated to `ModProfileSlimHelper` and base-path expectations restored to the `/images/` default; `ModuleEntryPointTest` references the renamed element/class; added `tests/ScriptTest.php` covering the non-breaking migration (params/position/menu carry-over, legacy removal, fresh-install no-op).
 
 ## [1.9.2] - 2026-09-07
 
