@@ -8,7 +8,7 @@
  * extension being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.8.8
+ * @version 1.8.9
  */
 defined('_JEXEC') or die;
 
@@ -25,7 +25,7 @@ require_once __DIR__ . '/helper.php';
 
 $profileUrl   = isset($params) ? ModProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
 if ($profileUrl === '') {
-    $profileUrl = ModProfileSlimHelper::joomlaProfileUrl((int) $user->id);
+    $profileUrl = ModProfileSlimHelper::profileUrl((int) $user->id);
 }
 $avatarBasePath = isset($params) ? ModProfileSlimHelper::validateBasePath($params->get('avatar_base_path', '/images/')) : '/images/';
 if ($avatarBasePath === '') {
