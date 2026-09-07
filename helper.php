@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  Joomla Profile Slim Display
- * @version     1.9.0
+ * @version     1.9.1
  */
 defined('_JEXEC') or die;
 
@@ -356,6 +356,21 @@ class ModProfileSlimHelper
             return '/images/';
         }
         return rtrim($normalized, '/') . '/';
+    }
+
+    /**
+     * Lightweight installed check. Whether Community Builder is actually
+     * present on this site, WITHOUT triggering full CB API initialization
+     * (cbimport, plugin loads). Used to decide between the canonical CB menu
+     * resolver and the native Joomla profile link.
+     *
+     * @return bool
+     * @since 1.9.1
+     */
+    public static function isCbInstalled()
+    {
+        return file_exists(JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php')
+            || file_exists(JPATH_SITE . '/components/com_comprofiler/comprofiler.php');
     }
 
     /**
