@@ -1,8 +1,7 @@
-# Community Builder Profile Slim Display (`mod_cbprofileslim`)
+# Joomla Profile Slim Display (`mod_cbprofileslim`)
 
-Standalone **Joomla 3 module** that displays the **logged-in Community Builder user's
-display name + avatar** in the site's top header navbar. It reads user data via the
-**Community Builder API** (CB is required — that is where the name and avatar come from).
+Standalone **Joomla 3 module** that displays the **logged-in user's
+display name + avatar** in the site's top header navbar. 
 
 ## Why this exists
 
