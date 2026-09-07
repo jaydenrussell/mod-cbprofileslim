@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  Joomla Profile Slim Display
- * @version     1.9.1
+ * @version     1.9.2
  */
 defined('_JEXEC') or die;
 
@@ -129,19 +129,24 @@ class ModProfileSlimHelper
     private static function getAvatarFromUserProfiles($userId)
     {
         try {
+            $keys = array('avatar', 'profile.avatar', 'user.avatar', 'avatar_url', 'profile_picture');
             $db = Factory::getDbo();
-            $keys = ['avatar', 'profile.avatar', 'user.avatar', 'avatar_url', 'profile_picture'];
-            foreach ($keys as $key) {
-                $db->setQuery(
-                    $db->getQuery(true)
-                        ->select($db->quoteName('profile_value'))
-                        ->from($db->quoteName('#__user_profiles'))
-                        ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
-                        ->where($db->quoteName('profile_key') . ' = ' . $db->quote($key))
-                );
-                $value = $db->loadResult();
-                if (is_string($value) && $value !== '' && $value !== '0') {
-                    return $value;
+            $db->setQuery(
+                $db->getQuery(true)
+                    ->select($db->quoteName(array('profile_key', 'profile_value')))
+                    ->from($db->quoteName('#__user_profiles'))
+                    ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
+                    ->where($db->quoteName('profile_key') . ' IN (' . implode(',', $db->quote($keys)) . ')')
+            );
+            $rows = $db->loadAssocList('profile_key');
+            if (is_array($rows)) {
+                foreach ($keys as $key) {
+                    if (isset($rows[$key]['profile_value'])
+                        && is_string($rows[$key]['profile_value'])
+                        && $rows[$key]['profile_value'] !== ''
+                        && $rows[$key]['profile_value'] !== '0') {
+                        return $rows[$key]['profile_value'];
+                    }
                 }
             }
         } catch (\Throwable $e) {
@@ -228,14 +233,18 @@ class ModProfileSlimHelper
                 && !preg_match('#^\d{1,3}(\.\d{1,3}){3}$#', $host)) {
                 return $host;
             }
+            if (preg_match('#^\[[0-9a-fA-F:]+\]$#', $host)) {
+                return $host;
+            }
         }
         return '';
     }
 
     /**
      * Returns the user's profile URL. When Community Builder is installed,
-     * CB intercepts user profile URLs and redirects to CB's profile page.
-     * When CB is not installed, falls back to Joomla's native profile link.
+     * builds the explicit CB profile route (CB's router handles the SEF link,
+     * no menu binding required). When CB is not installed, falls back to
+     * Joomla's native profile link.
      *
      * @param int $userId
      * @return string
@@ -243,22 +252,18 @@ class ModProfileSlimHelper
      */
     public static function profileUrl($userId)
     {
-        if (self::cbAvailable()) {
+        $userId = (int) $userId;
+
+        if (self::isCbInstalled()) {
             try {
-                $cbUser = CBuser::getInstance((int) $userId, false);
-                if ($cbUser && method_exists($cbUser, 'userProfileURL')) {
-                    $url = $cbUser->userProfileURL();
-                    if (is_string($url) && $url !== '') {
-                        return self::validateUrl($url);
-                    }
-                }
+                return Route::_('index.php?option=com_comprofiler&view=userprofile&user=' . $userId);
             } catch (\Throwable $e) {
-                self::log('profileUrl CB failed: ' . $e->getMessage());
+                self::log('profileUrl CB route failed: ' . $e->getMessage());
             }
         }
 
         try {
-            return Route::_('index.php?option=com_users&view=profile&id=' . (int) $userId);
+            return Route::_('index.php?option=com_users&view=profile&id=' . $userId);
         } catch (\Throwable $e) {
             self::log('profileUrl failed: ' . $e->getMessage());
         }
@@ -266,9 +271,11 @@ class ModProfileSlimHelper
     }
 
     /**
-     * Strict URL validator for the profile link. Only http(s) schemes allowed;
-     * rejects javascript:, data:, protocol-relative (//), and anything non-URL.
-     * Returns the validated URL or an empty string (never an unsafe value).
+     * Strict URL validator for the profile link. Accepts absolute http(s)
+     * URLs and safe site-relative paths; rejects javascript:, data:, any
+     * other scheme, protocol-relative (//), unsafe characters, and URL-encoded
+     * variants of the same. Returns the validated value or an empty string
+     * (never an unsafe value).
      *
      * @param string $raw
      * @return string
@@ -279,13 +286,20 @@ class ModProfileSlimHelper
         if (!is_string($raw) || $raw === '') {
             return '';
         }
-        if (!preg_match('#^https?://#i', $raw)) {
-            self::log('Profile URL rejected (not http(s)): ' . $raw);
-            return '';
-        }
         if (preg_match('#[\x00-\x20<>"\'\\\\]#', $raw)) {
             self::log('Profile URL rejected (unsafe chars): ' . $raw);
             return '';
+        }
+        if (strpos($raw, '//') === 0) {
+            self::log('Profile URL rejected (protocol-relative): ' . $raw);
+            return '';
+        }
+        if (preg_match('#^[a-z][a-z0-9+.\-]*:#i', $raw)) {
+            $scheme = strtolower(substr($raw, 0, strpos($raw, ':')));
+            if (!in_array($scheme, array('http', 'https'), true)) {
+                self::log('Profile URL rejected (disallowed scheme): ' . $raw);
+                return '';
+            }
         }
         $decoded = rawurldecode($raw);
         if ($decoded !== $raw && preg_match('#[\x00-\x20<>"\']#', $decoded)) {
