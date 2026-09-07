@@ -1,9 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  LEGACY TRANSITION FEED for `mod_cbprofileslim` (v1.9.2 and earlier).
+
+  Existing installs registered the pre-rename URL
+  https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml
+  in their manifests. After the repository rename, GitHub redirects that URL to
+  THIS file. It advertises the same release zip under the OLD element so Joomla
+  matches it against the installed extension and offers the upgrade through
+  Extensions → Update. Extensions → Update then installs mod_profileslim.zip,
+  whose manifest declares the NEW element; the bundled script.php migrates the
+  module configuration and removes the legacy records/folder (non-breaking).
+
+  New installs and installs that have already migrated use the current feed:
+  https://raw.githubusercontent.com/jaydenrussell/mod-profileslim/master/update-profileslim.xml
+  Keep the version, sha256 and downloadurl in both feeds in sync per release.
+-->
 <updates>
 	<update>
 		<name>Joomla Profile Slim Display</name>
-		<description>Standalone Joomla module: displays the logged-in user's display name and avatar in the top header navbar using Joomla's built-in profile system. Optional Community Builder awareness — when CB is installed the profile link follows CB's canonical View Profile menu item.</description>
-		<element>mod_profileslim</element>
+		<description>Standalone Joomla module: displays the logged-in user's display name and avatar in the top header navbar using Joomla's built-in profile system. Optional Community Builder awareness — when CB is installed the profile link follows CB's canonical View Profile menu item. Transition update that renames the installed module element to mod_profileslim.</description>
+		<element>mod_cbprofileslim</element>
 		<type>module</type>
 		<client>site</client>
 		<version>1.10.0</version>
@@ -11,7 +27,7 @@
 		<date>September 2026</date>
 		<infourl>https://github.com/jaydenrussell/mod-profileslim</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-profileslim/releases/download/v1.10.0/mod_profileslim.zip</downloadurl>
-		<sha256>2766E2357D9AABE3A67C5C6ED2449B55876D815FF10D850C0EFF81574A8AB4F8</sha256>
+		<sha256>123C5C734E035C7946FA4804DE141440B755EA3D2118DD4E644DA668303128F8</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
