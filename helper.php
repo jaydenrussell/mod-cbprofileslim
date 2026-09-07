@@ -2,7 +2,7 @@
 /**
  * @package     mod_cbprofileslim
  * @subpackage  Joomla Profile Slim Display
- * @version     1.8.6
+ * @version     1.8.7
  */
 defined('_JEXEC') or die;
 
@@ -12,6 +12,8 @@ use Joomla\CMS\Router\Route;
 
 class ModProfileSlimHelper
 {
+    private static $cbAvailable = null;
+
     /**
      * @param int $userId
      * @return string
@@ -19,6 +21,20 @@ class ModProfileSlimHelper
      */
     public static function getDisplayName($userId)
     {
+        if (self::cbAvailable()) {
+            try {
+                $cbUser = \CBuser::getInstance((int) $userId, false);
+                if ($cbUser) {
+                    $cbName = $cbUser->getField('typename', null, 'raw');
+                    if (is_string($cbName) && $cbName !== '') {
+                        return $cbName;
+                    }
+                }
+            } catch (\Throwable $e) {
+                self::log('getDisplayName CB failed: ' . $e->getMessage());
+            }
+        }
+
         try {
             $user = Factory::getUser((int) $userId);
             $name = $user->get('name');
@@ -47,16 +63,39 @@ class ModProfileSlimHelper
     {
         $raw = '';
 
-        try {
-            $user = Factory::getUser((int) $userId);
-            $avatar = $user->get('avatar');
-            if (is_string($avatar) && $avatar !== '') {
-                $raw = $avatar;
+        if (self::cbAvailable()) {
+            try {
+                $cbUser = \CBuser::getInstance((int) $userId, false);
+                if ($cbUser) {
+                    // Method A: raw relative path
+                    $raw = $cbUser->getField('avatar', null, 'csv');
+                    // Method B: parse src from rendered HTML
+                    if (empty($raw)) {
+                        $html = $cbUser->getField('avatar', null, 'html', 'none', 'profile', 0, false);
+                        if (is_string($html)) {
+                            if (preg_match('#src="([^"]+)"#i', $html, $m)) {
+                                $raw = $m[1];
+                            } elseif (preg_match("#src='([^']+)'#i", $html, $m)) {
+                                $raw = $m[1];
+                            }
+                        }
+                    }
+                    // Method C: direct property
+                    if (empty($raw) && !empty($cbUser->avatar)) {
+                        $raw = $cbUser->avatar;
+                    }
+                }
+            } catch (\Throwable $e) {
+                self::log('getAvatar CB failed: ' . $e->getMessage());
             }
-        } catch (\Throwable $e) {
-            self::log('getAvatar user profile failed: ' . $e->getMessage());
         }
 
+        if ($raw === '') {
+            // Try Joomla #__user_profiles for avatar data
+            $raw = self::getAvatarFromUserProfiles((int) $userId);
+        }
+
+        // DB fallback (opt-in)
         if ($raw === '' && $allowDbFallback) {
             try {
                 $db = Factory::getDbo();
@@ -65,7 +104,7 @@ class ModProfileSlimHelper
                         ->select($db->quoteName('profile_value'))
                         ->from($db->quoteName('#__user_profiles'))
                         ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
-                        ->where($db->quoteName('profile_key') . ' = ' . $db->quote('avatar'))
+                        ->where($db->quoteName('profile_key') . ' LIKE ' . $db->quote('%avatar%'))
                 );
                 $dbAvatar = $db->loadResult();
                 if (is_string($dbAvatar) && $dbAvatar !== '' && $dbAvatar !== '0') {
@@ -77,6 +116,38 @@ class ModProfileSlimHelper
         }
 
         return self::sanitizeAvatarUrl($raw, $basePath);
+    }
+
+    /**
+     * Queries Joomla's #__user_profiles table for avatar data.
+     * Checks multiple possible profile keys used by Joomla and extensions.
+     *
+     * @param int $userId
+     * @return string
+     * @since 1.8.7
+     */
+    private static function getAvatarFromUserProfiles($userId)
+    {
+        try {
+            $db = Factory::getDbo();
+            $keys = ['avatar', 'profile.avatar', 'user.avatar', 'avatar_url', 'profile_picture'];
+            foreach ($keys as $key) {
+                $db->setQuery(
+                    $db->getQuery(true)
+                        ->select($db->quoteName('profile_value'))
+                        ->from($db->quoteName('#__user_profiles'))
+                        ->where($db->quoteName('user_id') . ' = ' . (int) $userId)
+                        ->where($db->quoteName('profile_key') . ' = ' . $db->quote($key))
+                );
+                $value = $db->loadResult();
+                if (is_string($value) && $value !== '' && $value !== '0') {
+                    return $value;
+                }
+            }
+        } catch (\Throwable $e) {
+            self::log('getAvatarFromUserProfiles failed: ' . $e->getMessage());
+        }
+        return '';
     }
 
     /**
@@ -162,18 +233,34 @@ class ModProfileSlimHelper
     }
 
     /**
-     * Returns the default Joomla profile URL for the given user.
+     * Returns the user's profile URL. When Community Builder is installed,
+     * CB intercepts user profile URLs and redirects to CB's profile page.
+     * When CB is not installed, falls back to Joomla's native profile link.
      *
      * @param int $userId
      * @return string
      * @since 1.6.0
      */
-    public static function joomlaProfileUrl($userId)
+    public static function profileUrl($userId)
     {
+        if (self::cbAvailable()) {
+            try {
+                $cbUser = \CBuser::getInstance((int) $userId, false);
+                if ($cbUser && method_exists($cbUser, 'userProfileURL')) {
+                    $url = $cbUser->userProfileURL();
+                    if (is_string($url) && $url !== '') {
+                        return self::validateUrl($url);
+                    }
+                }
+            } catch (\Throwable $e) {
+                self::log('profileUrl CB failed: ' . $e->getMessage());
+            }
+        }
+
         try {
             return Route::_('index.php?option=com_users&view=profile&id=' . (int) $userId);
         } catch (\Throwable $e) {
-            self::log('joomlaProfileUrl failed: ' . $e->getMessage());
+            self::log('profileUrl failed: ' . $e->getMessage());
         }
         return '';
     }
@@ -214,9 +301,7 @@ class ModProfileSlimHelper
     }
 
     /**
-     * Strict CSS-value validator for padding/margin params. Allows only
-     * tokens safe inside a CSS declaration (numbers, units, %, spacing, !important).
-     * Rejects ; { } url( and any other punctuation that enables CSS injection.
+     * Strict CSS-value validator for padding/margin params.
      *
      * @param string $raw
      * @return string
@@ -243,8 +328,7 @@ class ModProfileSlimHelper
     }
 
     /**
-     * Validates the configured avatar base directory. Only allows a root-relative
-     * path of safe characters with a leading slash.
+     * Validates the configured avatar base directory.
      *
      * @param string $raw
      * @return string
@@ -274,12 +358,59 @@ class ModProfileSlimHelper
         return rtrim($normalized, '/') . '/';
     }
 
-    private static $initFailed = false;
+    /**
+     * Checks if Community Builder is installed and available on this site.
+     * Results are cached per request to avoid repeated file checks.
+     *
+     * @return bool
+     * @since 1.8.7
+     */
+    private static function cbAvailable()
+    {
+        if (self::$cbAvailable !== null) {
+            return self::$cbAvailable;
+        }
+
+        $cbFoundation = JPATH_ADMINISTRATOR . '/components/com_comprofiler/plugin.foundation.php';
+        if (!file_exists($cbFoundation)) {
+            self::$cbAvailable = false;
+            return false;
+        }
+
+        if (!defined('CB_LOADED')) {
+            include_once $cbFoundation;
+        }
+
+        if (class_exists('CBuser')) {
+            self::$cbAvailable = true;
+            return true;
+        }
+
+        if (function_exists('cbimport')) {
+            try {
+                cbimport('cb.html');
+                cbimport('cb.database');
+                if (isset($GLOBALS['_PLUGINS']) && method_exists($GLOBALS['_PLUGINS'], 'loadPluginGroup')) {
+                    $GLOBALS['_PLUGINS']->loadPluginGroup('user');
+                }
+            } catch (\Throwable $e) {
+                self::log('cbimport failed: ' . $e->getMessage());
+            }
+        }
+
+        if (class_exists('CBuser')) {
+            self::$cbAvailable = true;
+            return true;
+        }
+
+        self::$cbAvailable = false;
+        return false;
+    }
 
     /**
-     * @since 1.2.0
+     * @since 1.2.1
      */
-    protected static function log($msg)
+    private static function log($msg)
     {
         try {
             Log::add('mod_cbprofileslim: ' . $msg, Log::WARNING, 'mod_cbprofileslim');
