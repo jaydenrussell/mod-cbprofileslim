@@ -41,13 +41,13 @@ class SanitizerTest extends TestCase
     }
 
     /**
-     * Invokes the private ModCbProfileSlimHelper::sanitizeAvatarUrl via
+     * Invokes the private ModProfileSlimHelper::sanitizeAvatarUrl via
      * reflection so its unit tests can run without weakening the shipped
      * class's encapsulation (the method stays private in production).
      */
     private static function sanitizeAvatar($raw)
     {
-        $rm = new \ReflectionMethod('ModCbProfileSlimHelper', 'sanitizeAvatarUrl');
+        $rm = new \ReflectionMethod('ModProfileSlimHelper', 'sanitizeAvatarUrl');
         $rm->setAccessible(true);
         return $rm->invoke(null, $raw);
     }
@@ -72,7 +72,7 @@ class SanitizerTest extends TestCase
     /** @dataProvider urlProvider */
     public function testValidateUrl($input, $expected)
     {
-        $this->assertSame($expected, ModCbProfileSlimHelper::validateUrl($input));
+        $this->assertSame($expected, ModProfileSlimHelper::validateUrl($input));
     }
 
     // ---- CSS validator (MEDIUM fix regression) ----
@@ -97,7 +97,7 @@ class SanitizerTest extends TestCase
     /** @dataProvider cssProvider */
     public function testValidateCss($input, $expected)
     {
-        $this->assertSame($expected, ModCbProfileSlimHelper::validateCss($input));
+        $this->assertSame($expected, ModProfileSlimHelper::validateCss($input));
     }
 
     // ---- Base path validator (H1 regression: reject traversal / empty segments) ----
@@ -106,19 +106,19 @@ class SanitizerTest extends TestCase
         return [
             'default'          => ['/images/comprofiler/', '/images/comprofiler/'],
             'subdir'           => ['/images/comprofiler/gallery/', '/images/comprofiler/gallery/'],
-            'traversal'        => ['/images/../secret/', '/images/comprofiler/'],
-            'traversal mid'    => ['/images/comprofiler/../x/', '/images/comprofiler/'],
-            'double slash'     => ['/images//comprofiler/', '/images/comprofiler/'],
-            'scheme'           => ['https://evil.com/x/', '/images/comprofiler/'],
-            'empty'            => ['', '/images/comprofiler/'],
-            'dot segment'      => ['/images/./comprofiler/', '/images/comprofiler/'],
+            'traversal'        => ['/images/../secret/', '/images/'],
+            'traversal mid'    => ['/images/comprofiler/../x/', '/images/'],
+            'double slash'     => ['/images//comprofiler/', '/images/'],
+            'scheme'           => ['https://evil.com/x/', '/images/'],
+            'empty'            => ['', '/images/'],
+            'dot segment'      => ['/images/./comprofiler/', '/images/'],
         ];
     }
 
     /** @dataProvider basePathProvider */
     public function testValidateBasePath($input, $expected)
     {
-        $this->assertSame($expected, ModCbProfileSlimHelper::validateBasePath($input));
+        $this->assertSame($expected, ModProfileSlimHelper::validateBasePath($input));
     }
 
     // ---- Avatar absolute same-site URL (needs a known site host in env) ----
