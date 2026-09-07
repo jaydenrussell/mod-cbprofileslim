@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for mod_cbprofileslim.php entry point.
+ * Unit tests for mod_profileslim.php entry point.
  *
  * These tests verify the module's top-level behavior using output buffering
  * to capture actual rendered output:
@@ -8,7 +8,7 @@
  * - The module does not produce fatal errors (top-level try/catch)
  * - Helper methods correctly process logged-in user data
  *
- * @package     mod_cbprofileslim
+ * @package     mod_profileslim
  * @since       1.7.1
  */
 
@@ -111,7 +111,7 @@ namespace {
     define('_JEXEC', 1);
 
     require_once __DIR__ . '/../tests/bootstrap.php';
-    require_once __DIR__ . '/../mod_cbprofileslim.php';
+    require_once __DIR__ . '/../mod_profileslim.php';
 
     use PHPUnit\Framework\TestCase;
 
@@ -136,7 +136,7 @@ namespace {
             // Factory::getUser() returns a guest by default.
             // Capture the module's actual output via output buffering.
             ob_start();
-            require_once __DIR__ . '/../mod_cbprofileslim.php';
+            require_once __DIR__ . '/../mod_profileslim.php';
             $output = ob_get_clean();
 
             $this->assertEmpty($output, 'Guest users must receive no module output.');
@@ -150,14 +150,14 @@ namespace {
             $this->expectNotToPerformAssertions();
 
             ob_start();
-            require_once __DIR__ . '/../mod_cbprofileslim.php';
+            require_once __DIR__ . '/../mod_profileslim.php';
             ob_end_clean();
         }
 
         public function testDisplayNameReturnsNonEmptyForLoggedInUser()
         {
             // Test the helper directly for a logged-in user scenario.
-            $displayName = ModCbProfileSlimHelper::getDisplayName(42);
+            $displayName = ModProfileSlimHelper::getDisplayName(42);
 
             // Display name may be empty if CB is not loaded in test env,
             // but the method must not throw or produce a fatal error.
@@ -166,7 +166,7 @@ namespace {
 
         public function testAvatarUrlReturnsString()
         {
-            $avatarUrl = ModCbProfileSlimHelper::getAvatar(42, 32);
+            $avatarUrl = ModProfileSlimHelper::getAvatar(42, 32);
 
             $this->assertIsString($avatarUrl);
         }
@@ -174,8 +174,8 @@ namespace {
         public function testValidateBasePathRejectsTraversal()
         {
             $this->assertSame(
-                '/images/comprofiler/',
-                ModCbProfileSlimHelper::validateBasePath('/images/../secret/')
+                '/images/',
+                ModProfileSlimHelper::validateBasePath('/images/../secret/')
             );
         }
 
@@ -183,7 +183,7 @@ namespace {
         {
             $this->assertSame(
                 '',
-                ModCbProfileSlimHelper::validateUrl('javascript:alert(1)')
+                ModProfileSlimHelper::validateUrl('javascript:alert(1)')
             );
         }
 
@@ -191,7 +191,7 @@ namespace {
         {
             $this->assertSame(
                 '',
-                ModCbProfileSlimHelper::validateCss('expression(alert(1))')
+                ModProfileSlimHelper::validateCss('expression(alert(1))')
             );
         }
     }
