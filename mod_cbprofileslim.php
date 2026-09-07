@@ -8,11 +8,12 @@
  * extension being on the page.
  * Top-level try/catch prevents any error from becoming a 500.
  *
- * @version 1.9.1
+ * @version 1.9.2
  */
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
+use Joomla\CMS\Log\Log;
 
 try {
 
@@ -26,16 +27,32 @@ require_once __DIR__ . '/helper.php';
 $profileItemid = isset($params) ? (int) $params->get('profile_itemid', 0) : 0;
 
 // Canonical CB menu resolver (collision-safe with cblogin-modern-blue).
-// Only used when Community Builder is actually installed; otherwise the
+// Loaded ONLY when Community Builder is actually present; otherwise the
 // module renders the native Joomla profile link.
-if (is_file(__DIR__ . '/cbmenu.php')) {
+$cbMenu = null;
+if (ModProfileSlimHelper::isCbInstalled() && is_file(__DIR__ . '/cbmenu.php')) {
     require_once __DIR__ . '/cbmenu.php';
-}
-$cbMenu = class_exists('SccCbMenuResolver') ? SccCbMenuResolver::instance() : null;
+    if (class_exists('SccCbMenuResolver')) {
+        $cbMenu = SccCbMenuResolver::instance();
 
-if ($cbMenu && ModProfileSlimHelper::isCbInstalled()) {
+        // Version-skew guard: the theme may already have loaded an older
+        // copy of this class. Fail loudly (log) if it is not ours.
+        try {
+            $resolverRefl = new \ReflectionClass('SccCbMenuResolver');
+            $loadedVer   = $resolverRefl->hasConstant('VERSION') ? (string) $resolverRefl->getConstant('VERSION') : 'unknown';
+            if ($loadedVer !== '1.9.2') {
+                Log::add('mod_cbprofileslim: loaded SccCbMenuResolver version ' . $loadedVer . ' (expected 1.9.2)', Log::WARNING, 'mod_cbprofileslim');
+            }
+        } catch (\Throwable $e) {
+        }
+    }
+}
+
+$profileUrl = '';
+if ($cbMenu) {
     $profileUrl = $cbMenu->getProfileUrl((int) $user->id, $profileItemid);
-} else {
+}
+if ($profileUrl === '') {
     $profileUrl = isset($params) ? ModProfileSlimHelper::validateUrl($params->get('profile_url', '')) : '';
     if ($profileUrl === '') {
         $profileUrl = ModProfileSlimHelper::profileUrl((int) $user->id);
@@ -94,5 +111,18 @@ $doc->addCustomTag('<link rel="preload" href="' . htmlspecialchars($cssUrl, ENT_
 </div>
 <?php
 } catch (\Throwable $e) {
-    @error_log('mod_cbprofileslim error: ' . $e->getMessage());
+    try {
+        Log::add('mod_cbprofileslim: ' . $e->getMessage(), Log::WARNING, 'mod_cbprofileslim');
+    } catch (\Throwable $ignored) {
+    }
+
+    if (defined('JDEBUG') && JDEBUG) {
+        try {
+            $debugUser = Factory::getUser();
+            if ($debugUser && $debugUser->authorise('core.admin')) {
+                echo '<!-- mod_cbprofileslim error: ' . htmlspecialchars((string) $e->getMessage(), ENT_QUOTES, 'UTF-8') . ' -->';
+            }
+        } catch (\Throwable $ignored) {
+        }
+    }
 }
