@@ -1,36 +1,81 @@
-# Joomla Profile Slim Display (`mod_cbprofileslim`)
+# Joomla Profile Slim Display (`mod_profileslim`)
 
-Standalone **Joomla 3 module** that displays the **logged-in user's
-display name + avatar** in the site's top header navbar. 
+Standalone **Joomla 3 module** that displays the **logged-in user's display name and
+avatar** in the site's top header navbar.
+
+It runs entirely on **Joomla's built-in profile system** — the display name, the avatar,
+and the profile link are all resolved natively. No third-party profile extension is
+required for anything the module does.
+
+**Community Builder is optional.** When CB is installed, the module is *aware* of it and
+uses only CB's canonical "View Profile" menu item for the profile link (see
+"[Community Builder](#community-builder-optional)" below). Community Builder is a
+compatibility layer, never a requirement.
 
 ## Why this exists
 
-Community Builder's own login module can show the avatar, but only when that module is
-on the page. This module is **standalone**: it initialises the CB API itself and works on
-every page (calendar, articles, anywhere) without depending on another CB module being present.
+Joomla's own login module cannot show the name and avatar inline in a header bar. This
+module is standalone: it works on every page (articles, calendar, anywhere) without
+depending on another profile extension being loaded on the page.
 
 ## Install
 
-1. **Extensions → Install**, upload `mod_cbprofileslim.zip`.
-2. Set the module position to your header navbar (e.g. `topbar-2` on the Astroid `tpl_jdseattle` template).
+1. **Extensions → Manage → Install**, upload `mod_profileslim.zip`.
+2. Place the module in your header navbar position (e.g. `topbar-2` on Astroid templates,
+   such as `tpl_jdseattle`).
 3. Clear Joomla cache.
+
+> **Upgrading from `mod_cbprofileslim` (v1.9.2 and earlier)?** See
+> "[Upgrading](#upgrading-from-mod_cbprofileslim)" below — it is non-breaking.
 
 ## How the avatar works
 
-- **Community Builder API first.** `initCbApi()` loads CB, then the avatar is resolved via
-  `CBuser::getInstance()->getField('avatar', ...)` using three methods (csv → html-parse → property).
-- **DB fallback is opt-in.** A module parameter `avatar_db_fallback` (default **No**) controls
-  whether a direct `#__comprofiler` query is used when the CB API returns nothing. With it **off**,
-  a blank avatar proves the CB API returned nothing on that page.
-- The display name uses the CB `typename` field, falling back to the Joomla user name.
+- **Joomla profile system (default).** The avatar comes from the `avatar` profile field
+  in Joomla's `#__user_profiles` table; several common keys are recognised
+  (`avatar`, `profile.avatar`, `user.avatar`, `avatar_url`, `profile_picture`).
+- **DB fallback is opt-in.** A module parameter `avatar_db_fallback` (default **No**)
+  adds a direct `#__user_profiles` query when the profile API returns nothing.
+- The display name uses the user's Joomla `name`, falling back to `username`.
+- The default profile link is Joomla's native profile view
+  (`index.php?option=com_users&view=profile&id=X`); it can be overridden with the
+  `profile_url` module parameter (absolute http(s) or safe site-relative path).
 - **Avatar storage requirement (hard constraint).** `sanitizeAvatarUrl()` only accepts a
-  **relative path** under `/images/comprofiler/` — a flat filename (`383_abc.jpg`) **or** a
-  subfolder path (`sub/dir/x.png`) — and, when CB returns one, a same-site absolute URL
-  (the foreign host is stripped to a same-origin relative path). It **rejects** foreign/absolute
-  hosts, `javascript:`/`data:` and any other scheme, protocol-relative (`//`), backslashes,
-  `..` path traversal, and any unsafe character; rejected values render the avatar blank.
-  Do **not** relax the validator — it is intentional hardening. If CB hands you a foreign-host
-  avatar URL, fix the stored data instead.
+  **relative path** under your configured avatar base directory — a flat filename
+  (`383_abc.jpg`) **or** a subfolder path (`sub/dir/x.png`) — and, when one is returned,
+  a same-site absolute URL (the foreign host is stripped to a same-origin relative
+  path). It **rejects** foreign/absolute hosts, `javascript:`/`data:` and any other
+  scheme, protocol-relative (`//`), backslashes, `..` path traversal, and any unsafe
+  character; rejected values render the avatar blank. Do **not** relax the validator —
+  it is intentional hardening.
+
+### Community Builder (optional)
+
+Only the profile **link** is CB-aware. When CB's files are present on the site, the
+module reuses the canonical "View Profile" menu item resolution (the same
+`SccCbMenuResolver` shipped by the `cblogin-modern-blue` template) so the profile link
+follows CB's routing — this also covers CB's interception of Joomla profile links.
+Name and avatar continue to come from Joomla's profile system. If no accessible CB
+"View Profile" menu item exists, the module falls back to the configured or native
+Joomla profile link and logs a warning.
+
+## Upgrading from `mod_cbprofileslim`
+
+v1.10.0 renamed the module element from `mod_cbprofileslim` to `mod_profileslim` so the
+"CB" prefix no longer implies Community Builder is the primary function. Because the
+element changed:
+
+- The update is **not offered through Extensions → Update** for existing installs; the
+  update channel cannot match the old element. Install the `mod_profileslim.zip`
+  package manually via **Extensions → Manage → Install**.
+- The install is **non-breaking**. The bundled `script.php`
+  (`ModProfileslimInstallerScript`) migrates an existing `mod_cbprofileslim` module
+  instance automatically:
+  - parameters, title, position, ordering, published/access state, language, and
+    page (menu) assignments are copied to the new `mod_profileslim` module, and
+  - the legacy `mod_cbprofileslim` instance, its extension record, and the
+    `modules/mod_cbprofileslim` directory are removed.
+
+  You end up with exactly one module, configured exactly as before.
 
 ## Security model & update trust
 
@@ -51,36 +96,10 @@ The module registers a Joomla update server (`update.xml` on GitHub). After inst
 
 | Version | Notes |
 |---------|-------|
-| 1.2.0 | CB API init added for standalone operation |
-| 1.2.1 | try/catch around CB API block |
-| 1.2.2 | Top-level try/catch so module can't 500 the page |
-| 1.2.3 | Removed `cbimport('cb.plugin.user')` (missing file fatal) |
-| 1.2.4 | `loadPluginGroup('user')` wrapped in try/catch |
-| 1.2.5 | Joomla name fallback for display name |
-| 1.2.6 | Avatar uses `profile` view (master image) |
-| 1.2.7 | Removed SVG/onerror fallbacks |
-| 1.2.8 | Avatar DB query fallback (`#__comprofiler`) |
-| 1.2.9 | CB field API primary + DB fallback |
-| 1.3.0 | DB fallback uses `user_id`; keeps raw extension; profile_url param |
-| 1.3.1 | Security cleanup: removed debug block, avatar path allowlist |
-| 1.4.0 | Avatar DB fallback made opt-in (CB API only by default) |
-| 1.4.1 | Robust CB API avatar extraction: initCbApi first, csv→html→property |
-| 1.4.2 | Audit cleanup: docblock fix, htmlspecialchars on CSS params |
-| 1.4.3 | Add update.xml + updateservers (Joomla self-update); author=jaydenrussell |
-| 1.5.0 | **Renamed** SCC User Header → CB Profile Slim Display (`mod_cbprofileslim`); CSS `scc-` → `cbps-` |
-| 1.5.1 | Security hardening: strict avatar URL sanitizer (blocks external/protocol-relative loads); JLog diagnostics replace silent catches; update channel pinned to immutable release asset (`update-info`) |
-| 1.5.2 | MEDIUM fixes: validate `profile_url` (http(s)-only, XSS-safe) + CSS params; remove unused `Uri` import |
-| 1.5.3 | Bump version; refresh `update.xml` SHA256 |
-| 1.5.4 | Portable defaults: empty `profile_url` auto-links to CB profile; `avatar_base_path` made configurable |
-| 1.5.5 | Rename to Community Builder Profile Slim Display; fix avatar path to accept CB subfolder/full paths |
-| 1.5.6 | Update server migrated to `jaydenrussell.github.io/mod-cbprofileslim/update.xml` |
-| 1.5.7 | Avatar sanitizer accepts same-site absolute URLs (fixes gallery/avatar not showing) |
-| 1.5.8 | H1 base-path traversal fix; init-failure no longer wedges subsequent calls; L3/L4 cleanup; +CI tests |
-| 1.6.0 | CSS escaping hardened; `!important` allowed in container styles; docs rewritten; CI matrix adds PHP 7.4; language keys completed; CHANGELOG and SECURITY.md added |
-| 1.7.0 | Fix `avatar_align` top/center being identical; `validateCss()` blocks function-call tokens (`expression(`/`url(`/`calc(`) |
-
-> Note: v1.5.0 is a **clean break** — the element name changed, so it will not auto-update
-> from the old `mod_sccuserheader`. Uninstall the old module and install v1.5.0 fresh.
+| 1.10.0 | Element renamed `mod_cbprofileslim` → `mod_profileslim` with automatic non-breaking migration; naming and docs repositioned Joomla-first with CB optional |
+| 1.9.x  | Canonical CB menu-link resolution when CB is installed; loud failure handling; single-query avatar lookup; profile link falls back to native Joomla |
+| 1.8.x  | Moved to Joomla's built-in profile system for name, avatar and link; display name became "Joomla Profile Slim Display" |
+| 1.7.x–1.5.x | Security hardening, URL/CSS sanitizers, and the update channel work under the earlier `mod_cbprofileslim` element |
 
 ## License
 
