@@ -13,7 +13,6 @@
 defined('_JEXEC') or die;
 
 use Joomla\CMS\Factory;
-use Joomla\CMS\Router\Route;
 
 try {
 
@@ -81,4 +80,5 @@ $doc->addCustomTag('<link rel="preload" href="' . htmlspecialchars($cssUrl, ENT_
 </div>
 <?php
 } catch (\Throwable $e) {
+    @error_log('mod_cbprofileslim error: ' . $e->getMessage());
 }
