@@ -4,6 +4,17 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.0] - 2026-09-07
+
+### Added
+- **Canonical CB menu URL resolver**: Vendored `cbmenu.php` (collision-safe `SccCbMenuResolver` class, same as `cblogin-modern-blue`) into the package. The module profile link is now built through `SccCbMenuResolver::instance()->getProfileUrl($userId, $profileItemid)`, so the module emits the same canonical Community Builder SEF route (same `Itemid`, same `user` param) as the CB login template override. No hardcoded `cb-profile` aliases and no raw `/component/com_comprofiler/` URLs.
+- **`profile_itemid` parameter**: Optional module param for the canonical "View Profile" menu Itemid (default `0` = auto-detect via `#__menu`). Added manifest field + language keys.
+- **Graceful fallback**: If `cbmenu.php` is missing or `SccCbMenuResolver` can't load (e.g. other access level), the module falls back to the previous routing (`profile_url` param, then Joomla native profile link).
+
+### Changed
+- **Manifest**: `cbmenu.php` added to `<filename>` install list.
+- Avatar/display-name data source and CSS/JHtml behavior unchanged.
+
 ## [1.8.9] - 2026-09-07
 
 ### Fixed
