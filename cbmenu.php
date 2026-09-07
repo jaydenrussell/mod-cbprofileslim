@@ -12,7 +12,7 @@
  * Collision-safe: the class_exists() guard lets multiple packages ship this
  * file without redefining the class.
  *
- * @version 1.9.0
+ * @version 1.9.2
  */
 defined('_JEXEC') or die;
 
@@ -20,6 +20,9 @@ if (!class_exists('SccCbMenuResolver'))
 {
 class SccCbMenuResolver
 {
+	/** Shipped resolver version for collision/version-skew diagnostics. */
+	const VERSION = '1.9.2';
+
 	protected static $instance = null;
 
 	public static function instance()
@@ -162,7 +165,13 @@ class SccCbMenuResolver
 
 	public function getProfileUrl($userId = 0, $preferredItemId = 0)
 	{
-		$item  = $this->findMenuItem($preferredItemId, 'com_comprofiler', 'userprofile');
+		$item = $this->findMenuItem($preferredItemId, 'com_comprofiler', 'userprofile');
+
+		if (!$item)
+		{
+			return '';
+		}
+
 		$extra = array();
 		if ((int) $userId > 0)
 		{
@@ -174,7 +183,13 @@ class SccCbMenuResolver
 
 	public function getEditProfileUrl($userId = 0, $preferredItemId = 0)
 	{
-		$item  = $this->findMenuItem($preferredItemId, 'com_comprofiler', 'userprofile');
+		$item = $this->findMenuItem($preferredItemId, 'com_comprofiler', 'userprofile');
+
+		if (!$item)
+		{
+			return '';
+		}
+
 		$extra = array('task' => 'edit');
 		if ((int) $userId > 0)
 		{
