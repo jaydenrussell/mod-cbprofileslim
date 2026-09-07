@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension type="module" version="4.0" client="site" method="upgrade">
 	<name>Community Builder Profile Slim Display</name>
-	<author>jaydenrussell</author>
-	<creationDate>2026-08-19</creationDate>
+	<author>Jayden Russell</author>
+	<creationDate>September 2026</creationDate>
 	<copyright>Copyright (C) 2026 Simcoe Curling Club</copyright>
 	<license>GNU General Public License v2 or later</license>
 	<version>1.8.4</version>
