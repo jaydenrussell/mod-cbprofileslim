@@ -4,6 +4,21 @@ All notable changes to `mod_cbprofileslim` are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.9.2] - 2026-09-07
+
+### Fixed
+- **Silent total failure removed**: the top-level `catch (\Throwable)` in `mod_cbprofileslim.php` no longer swallows errors with `@error_log`. It now logs through `Joomla\CMS\Log\Log` (category `mod_cbprofileslim`) and, when `JDEBUG` is on and the viewer is a Super User, emits an HTML comment explaining the failure instead of rendering nothing. The v1.8.x "module vanished with no trace" class of bug can no longer hide.
+- **Resolver no longer emits raw CB URLs**: `SccCbMenuResolver::getProfileUrl()` / `getEditProfileUrl()` now return `''` when no accessible "View Profile" menu item exists, so the module never renders an `index.php?option=com_comprofiler` link without an `Itemid`. Empty result falls back to the configured `profile_url` or `profileUrl()`.
+- **Dead CB branch removed**: `profileUrl()` no longer routes CB results through `validateUrl()` (which required absolute http(s) and could never accept CB's SEF paths). It now builds the explicit CB profile route via `JRoute::_()` when CB is installed (CB's router handles the SEF link without a menu binding), otherwise the native `com_users` profile view.
+- **Resolver version-skew guard**: `SccCbMenuResolver` ships a `VERSION` constant (`1.9.2`). The module reflects the loaded class and logs a warning if a different (e.g. theme-shipped) copy loaded first. `cbmenu.php` is now required only when `isCbInstalled()` is true.
+- **Avatar DB query collapsed**: `getAvatarFromUserProfiles()` replaced 5 sequential `SELECT`s per key with a single `IN (...)` query (~5x fewer round trips per render).
+- **IPv6 same-origin avatars**: `siteHost()` accepts bracketed IPv6 literals so absolute same-origin avatars are not silently dropped on IPv6/live-host setups.
+- **`profile_url` accepts safe relative paths**: `validateUrl()` now permits safe site-relative values (still rejects `javascript:`, `data:`, any other scheme, protocol-relative `//`, control chars, and URL-encoded/double-encoded variants). Language string updated to document http(s) vs. relative.
+
+### Notes (operator)
+- If Community Builder is installed but there is no public "View Profile" menu item, the module now links to the native/configured profile URL and logs a warning rather than emitting a raw CB URL.
+- If `cblogin-modern-blue` and this module both ship `cbmenu.php`, keep the resolver copies at the same version or the module will log a version-skew warning on each request.
+
 ## [1.9.1] - 2026-09-07
 
 ### Fixed
