@@ -61,36 +61,37 @@ Joomla profile link and logs a warning.
 ## Upgrading from `mod_cbprofileslim`
 
 v1.10.0 renamed the module element from `mod_cbprofileslim` to `mod_profileslim` so the
-"CB" prefix no longer implies Community Builder is the primary function. Because the
-element changed:
+"CB" prefix no longer implies Community Builder is the primary function.
 
-- The update is **not offered through Extensions → Update** for existing installs; the
-  update channel cannot match the old element. Install the `mod_profileslim.zip`
-  package manually via **Extensions → Manage → Install**.
-- The install is **non-breaking**. The bundled `script.php`
+- **Existing installs update automatically.** Joomla's update channel matches the
+  **update feed entry** against the **installed element**, so the repository keeps two
+  feeds for the same release zip:
+  - `update.xml` is the URL older installs are hardwired to (GitHub redirects it here
+    after the repository rename) and advertises the zip under the legacy element
+    `mod_cbprofileslim`. Joomla therefore **offers v1.10.0 in Extensions → Update** to
+    every `mod_cbprofileslim` install from v1.9.2 back to earlier versions.
+  - `update-profileslim.xml` is registered by this manifest going forward, so once a
+    site runs `mod_profileslim` (fresh install **or** this upgrade) later versions
+    keep arriving through Extensions → Update.
+- **Installing the offered update (or the zip manually via Extensions → Manage →
+  Install) is non-breaking.** The bundled `script.php`
   (`ModProfileslimInstallerScript`) migrates an existing `mod_cbprofileslim` module
   instance automatically:
   - parameters, title, position, ordering, published/access state, language, and
     page (menu) assignments are copied to the new `mod_profileslim` module, and
-  - the legacy `mod_cbprofileslim` instance, its extension record, and the
-    `modules/mod_cbprofileslim` directory are removed.
+  - the legacy `mod_cbprofileslim` instance, its extension record, the
+    `modules/mod_cbprofileslim` directory, and the stale legacy update site are
+    removed.
 
   You end up with exactly one module, configured exactly as before.
 
-## Security model & update trust
-
-- The Joomla update channel fetches `update.xml` from the immutable `update-info` release
-  (not `master`), and verifies the downloaded zip against the SHA256 in that file.
-- **This provides transport integrity only, not authenticity.** If the GitHub account is
-  compromised, the `update-info` asset *and* its SHA256 can be swapped together, and every
-  install would pull attacker code. Mitigations in place: branch protection + mandatory CODEOWNERS
-  review + a required-approval `release` environment (see `.github/`). For untrusted distribution,
-  additionally host `update.xml` + zips on infrastructure you control with restricted write access.
-
 ## Updates
 
-The module registers a Joomla update server (`update.xml` on GitHub). After installing once,
-**Extensions → Update** will offer newer versions, verified by SHA256 checksum.
+The module registers a Joomla update server (`update-profileslim.xml` on GitHub).
+After installing once, **Extensions → Update** will offer newer versions, verified by
+the SHA256 checksum in the feed. See "[Upgrading from
+`mod_cbprofileslim`](#upgrading-from-mod-cbprofileslim)" for how the legacy feed keeps
+pre-v1.10.0 installs on the same release path.
 
 ## Version history
 
