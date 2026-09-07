@@ -4,14 +4,14 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
+| 1.10.x  | :white_check_mark: |
+| 1.9.x   | :white_check_mark: |
 | 1.8.x   | :white_check_mark: |
-| 1.7.x   | :white_check_mark: |
-| 1.6.x   | :white_check_mark: |
-| < 1.6.0 | :x:                |
+| < 1.8.0 | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability in `mod_cbprofileslim`, please report it
+If you discover a security vulnerability in `mod_profileslim`, please report it
 responsibly via email to the repository owner ([@jaydenrussell](https://github.com/jaydenrussell)).
 Do not open a public issue for security vulnerabilities.
 
@@ -43,6 +43,8 @@ For higher assurance on production sites, consider:
 
 ## Security Hardening History
 
+- **v1.10.0**: Element renamed to `mod_profileslim`; non-breaking migration script; naming and docs repositioned Joomla-first with Community Builder optional.
+- **v1.9.2**: Loud failure handling (no silent module death); resolver never emits raw CB URLs; dead CB branch removed; single-query avatar lookup; IPv6 same-origin avatars; `profile_url` accepts safe relative paths.
 - **v1.5.1**: Strict avatar URL sanitizer; JLog diagnostics replace silent catches;
   update channel pinned to immutable release asset.
 - **v1.5.2**: `validateUrl()` (http(s)-only) and `validateCss()` added; unused `Uri`
