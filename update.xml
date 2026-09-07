@@ -11,8 +11,9 @@
 		<date>September 2026</date>
 		<infourl>https://github.com/jaydenrussell/mod-cbprofileslim</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-cbprofileslim/releases/download/v1.8.8/mod_cbprofileslim.zip</downloadurl>
-		<sha256>09A2EA98BE1224D0D66DE2BED960355983E2B1B4C37021A7574926E4B4704797</sha256>
+		<sha256>EAC0E471A2A770814DCB814C222456A3FAE0502A11CA95B6A0BDC9B0249A8D9B</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
 </updates>
+
