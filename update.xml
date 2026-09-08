@@ -1,20 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  LEGACY TRANSITION FEED for `mod_cbprofileslim` (v1.9.2 and earlier).
-
-  Existing installs registered the pre-rename URL
-  https://raw.githubusercontent.com/jaydenrussell/mod-cbprofileslim/master/update.xml
-  in their manifests. After the repository rename, GitHub redirects that URL to
-  THIS file. It advertises the same release zip under the OLD element so Joomla
-  matches it against the installed extension and offers the upgrade through
-  Extensions → Update. Extensions → Update then installs mod_profileslim.zip,
-  whose manifest declares the NEW element; the bundled script.php migrates the
-  module configuration and removes the legacy records/folder (non-breaking).
-
-  New installs and installs that have already migrated use the current feed:
-  https://raw.githubusercontent.com/jaydenrussell/mod-profileslim/master/update-profileslim.xml
-  Keep the version, sha256 and downloadurl in both feeds in sync per release.
--->
 <updates>
 	<update>
 		<name>Joomla Profile Slim Display</name>
