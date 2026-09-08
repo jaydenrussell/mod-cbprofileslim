@@ -58,49 +58,17 @@ Name and avatar continue to come from Joomla's profile system. If no accessible 
 "View Profile" menu item exists, the module falls back to the configured or native
 Joomla profile link and logs a warning.
 
-## Upgrading from `mod_cbprofileslim`
-
-v1.10.0 renamed the module element from `mod_cbprofileslim` to `mod_profileslim` so the
-"CB" prefix no longer implies Community Builder is the primary function.
-
-- **Existing installs update automatically.** Joomla's update channel matches the
-  **update feed entry** against the **installed element**, so the repository keeps two
-  feeds for the same release zip:
-  - `update.xml` is the URL older installs are hardwired to (GitHub redirects it here
-    after the repository rename) and advertises the zip under the legacy element
-    `mod_cbprofileslim`. Joomla therefore **offers v1.10.0 in Extensions → Update** to
-    every `mod_cbprofileslim` install from v1.9.2 back to earlier versions.
-  - `update-profileslim.xml` is registered by this manifest going forward, so once a
-    site runs `mod_profileslim` (fresh install **or** this upgrade) later versions
-    keep arriving through Extensions → Update.
-- **Installing the offered update (or the zip manually via Extensions → Manage →
-  Install) is non-breaking.** The bundled `script.php`
-  (`ModProfileslimInstallerScript`) migrates an existing `mod_cbprofileslim` module
-  instance automatically:
-  - parameters, title, position, ordering, published/access state, language, and
-    page (menu) assignments are copied to the new `mod_profileslim` module, and
-  - the legacy `mod_cbprofileslim` instance, its extension record, the
-    `modules/mod_cbprofileslim` directory, and the stale legacy update site are
-    removed.
-
-  You end up with exactly one module, configured exactly as before.
-
 ## Updates
 
-The module registers a Joomla update server (`update-profileslim.xml` on GitHub).
-After installing once, **Extensions → Update** will offer newer versions, verified by
-the SHA256 checksum in the feed. See "[Upgrading from
-`mod_cbprofileslim`](#upgrading-from-mod-cbprofileslim)" for how the legacy feed keeps
-pre-v1.10.0 installs on the same release path.
+The module registers a Joomla update server (`update.xml` on GitHub). After installing
+once, **Extensions → Update** will offer newer versions, verified by the SHA256 checksum
+in the feed.
 
 ## Version history
 
 | Version | Notes |
 |---------|-------|
-| 1.10.0 | Element renamed `mod_cbprofileslim` → `mod_profileslim` with automatic non-breaking migration; naming and docs repositioned Joomla-first with CB optional |
-| 1.9.x  | Canonical CB menu-link resolution when CB is installed; loud failure handling; single-query avatar lookup; profile link falls back to native Joomla |
-| 1.8.x  | Moved to Joomla's built-in profile system for name, avatar and link; display name became "Joomla Profile Slim Display" |
-| 1.7.x–1.5.x | Security hardening, URL/CSS sanitizers, and the update channel work under the earlier `mod_cbprofileslim` element |
+| 1.10.0 | Fresh start under the `mod_profileslim` element: the module is explicitly a native Joomla extension with optional Community Builder awareness, and prior `mod_cbprofileslim` releases were removed from the repository alongside the rename |
 
 ## License
 
