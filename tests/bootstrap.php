@@ -47,18 +47,15 @@ namespace {
         define('JPATH_SITE', __DIR__);
     }
 
-    // Minimal, test-only stand-ins for the global Joomla classes used by
-    // script.php's migration (ModProfileslimInstallerScript). They emulate just
-    // enough of #__modules / #__modules_menu / #__extensions to verify the
-    // non-breaking rename migration in ScriptTest.
+    // Minimal, test-only stand-ins for the global Joomla classes used by helper.php
+    // and the module under test (ModProfileSlimHelper). They emulate just enough of
+    // #__modules / #__modules_menu / #__extensions for the test suites.
     class FakeJoomlaDbDriver
     {
         public $modules = array();      // id => assoc row (module element keyed lookup below)
         public $modulesById = array();  // id => assoc row
         public $menuAssign = array();   // list of array('moduleid'=>, 'menuid'=>)
         public $extensions = array();   // list of array('element'=>, 'type'=>)
-        public $updateSites = array();  // list of array('update_site_id'=>, 'location'=>, 'enabled'=>)
-        public $updateSiteExt = array(); // list of array('update_site_id'=>, 'extension_id'=>)
         public $lastQuery = null;
         public $executed = array();
 
@@ -206,10 +203,7 @@ namespace {
             if ($op === '=') {
                 return (string) $row[$col] === (string) $value;
             }
-            // Emulate SQL LIKE (case-insensitive substring match): strip the
-            // '%'/_ wildcards the real driver expands natively.
-            $value = str_replace(array('%', '_'), '', $value);
-            return $value !== '' && stripos((string) $row[$col], $value) !== false;
+            return stripos((string) $row[$col], $value) !== false;
         }
 
         public function matches($key = null)
@@ -235,22 +229,6 @@ namespace {
 
             if ($table === '#__extensions') {
                 foreach ($this->db->extensions as $row) {
-                    if ($this->rowMatches($row)) {
-                        $rows[] = $row;
-                    }
-                }
-            }
-
-            if ($table === '#__update_sites') {
-                foreach ($this->db->updateSites as $row) {
-                    if ($this->rowMatches($row)) {
-                        $rows[] = $row;
-                    }
-                }
-            }
-
-            if ($table === '#__update_sites_extensions') {
-                foreach ($this->db->updateSiteExt as $row) {
                     if ($this->rowMatches($row)) {
                         $rows[] = $row;
                     }
@@ -330,22 +308,6 @@ namespace {
             if ($table === '#__extensions') {
                 if ($this->type === 'delete') {
                     $this->db->extensions = array_values(array_filter($this->db->extensions, function ($row) {
-                        return !$this->rowMatches($row);
-                    }));
-                }
-            }
-
-            if ($table === '#__update_sites') {
-                if ($this->type === 'delete') {
-                    $this->db->updateSites = array_values(array_filter($this->db->updateSites, function ($row) {
-                        return !$this->rowMatches($row);
-                    }));
-                }
-            }
-
-            if ($table === '#__update_sites_extensions') {
-                if ($this->type === 'delete') {
-                    $this->db->updateSiteExt = array_values(array_filter($this->db->updateSiteExt, function ($row) {
                         return !$this->rowMatches($row);
                     }));
                 }
