@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  Update feed for `mod_profileslim`. Registered by the manifest's
+  <updateserver>. After installing once, Extensions → Update will offer newer
+  versions, each verified against the SHA256 in this file (transport integrity).
+-->
 <updates>
 	<update>
 		<name>Joomla Profile Slim Display</name>
-		<description>Standalone Joomla module: displays the logged-in user's display name and avatar in the top header navbar using Joomla's built-in profile system. Optional Community Builder awareness — when CB is installed the profile link follows CB's canonical View Profile menu item. Transition update that renames the installed module element to mod_profileslim.</description>
-		<element>mod_cbprofileslim</element>
+		<description>Standalone Joomla module: displays the logged-in user's display name and avatar in the top header navbar using Joomla's built-in profile system. Optional Community Builder awareness — when CB is installed the profile link follows CB's canonical View Profile menu item.</description>
+		<element>mod_profileslim</element>
 		<type>module</type>
 		<client>site</client>
 		<version>1.10.0</version>
@@ -11,7 +16,7 @@
 		<date>September 2026</date>
 		<infourl>https://github.com/jaydenrussell/mod-profileslim</infourl>
 		<downloadurl>https://github.com/jaydenrussell/mod-profileslim/releases/download/v1.10.0/mod_profileslim.zip</downloadurl>
-		<sha256>123C5C734E035C7946FA4804DE141440B755EA3D2118DD4E644DA668303128F8</sha256>
+		<sha256>85FF78C8E2846434F91723638D11C61B98711DE4DE684A1948091AF4B861DCE7</sha256>
 		<targetplatform name="joomla" version="3.[0-9]+" />
 		<php_minimum>7.4.0</php_minimum>
 	</update>
