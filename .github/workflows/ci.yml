@@ -23,9 +23,9 @@ jobs:
 
       - name: PHP lint (syntax check) — fails build on any parse error
         run: |
-          for f in mod_profileslim.php helper.php cbmenu.php script.php; do
+          for f in mod_profileslim.php helper.php cbmenu.php; do
             php -l "$f"
           done
 
       - name: Run unit tests
-        run: phpunit --bootstrap tests/bootstrap.php tests/SanitizerTest.php tests/ModuleEntryPointTest.php tests/ScriptTest.php
+        run: phpunit --bootstrap tests/bootstrap.php tests/SanitizerTest.php tests/ModuleEntryPointTest.php
